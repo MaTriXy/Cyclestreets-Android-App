@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+  <string-array name="units">
+    <item>kilomètres</item>
+    <item>Miles</item>
+  </string-array>
+
+  <string-array name="speed">
+    <item>Sans hâte 10mph (16km/h)</item>
+    <item>Croisière 12mph (20km/h)</item>
+    <item>Rapide 15mph (24km/h)</item>
+  </string-array>
+
+  <string-array name="routetype">
+    <item>Quietest</item>
+    <item>Équilibré</item>
+    <item>Le plus rapide</item>
+    <item>Shortest</item>
+  </string-array>
+
+  <string-array name="uploadsize">
+    <item>Redimensionner toujours à 640 pixels de large</item>
+    <item>Taille réelle quand le WiFi, 3.5G ou 4G disponible</item>
+    <item>Taille réelle</item>
+  </string-array>
+
+</resources>

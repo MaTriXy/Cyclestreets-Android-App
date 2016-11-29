@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+  <string-array name="units">
+    <item>Kilometre</item>
+    <item>Mil</item>
+  </string-array>
+
+  <string-array name="speed">
+    <item> 10mph (16km/h) Sakin</item>
+    <item> 12mph (20km/h) Sabit Hız</item>
+    <item> 15mph (24km/h) Hız</item>
+  </string-array>
+
+  <string-array name="routetype">
+    <item>En sessiz</item>
+    <item>Dengeli</item>
+    <item>En hızlı</item>
+    <item>En kısa</item>
+  </string-array>
+
+  <string-array name="uploadsize">
+    <item>Her zaman 640 pixel genişliğe boyutlandır</item>
+    <item>WiFi, 3.5G ya da 4G iken tam boyut</item>
+    <item>Tam boyut</item>
+  </string-array>
+
+</resources>
