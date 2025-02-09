@@ -9,12 +9,18 @@ import android.view.ViewGroup;
 
 public class PhotoMapFragment extends CycleMapFragment
 {
-  public View onCreateView(final LayoutInflater inflater, final ViewGroup container, final Bundle saved)
-  {
+  @Override
+  public void onCreate(Bundle savedInstanceState) {
+    setHasOptionsMenu(true);
+    super.onCreate(savedInstanceState);
+  }
+
+  @Override
+  public View onCreateView(final LayoutInflater inflater, final ViewGroup container, final Bundle saved) {
     final View v = super.onCreateView(inflater, container, saved);
 
-    overlayPushBottom(new PhotosOverlay(getActivity(), mapView()));
+    overlayPushBottom(new PhotosOverlay(mapView()));
 
     return v;
-  } // onCreate
-} // PhotomapActivity
+  }
+}

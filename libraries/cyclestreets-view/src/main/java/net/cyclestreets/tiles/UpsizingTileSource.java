@@ -5,7 +5,6 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 
 import org.osmdroid.tileprovider.ExpirableBitmapDrawable;
-import org.osmdroid.tileprovider.MapTile;
 import org.osmdroid.tileprovider.tilesource.BitmapTileSourceBase;
 import org.osmdroid.tileprovider.tilesource.ITileSource;
 import org.osmdroid.tileprovider.tilesource.OnlineTileSourceBase;
@@ -23,6 +22,7 @@ public class UpsizingTileSource implements ITileSource {
   }
 
   @Override
+  @Deprecated
   public int ordinal() { return base_.ordinal(); }
   @Override
   public String name() { return base_.name(); }
@@ -31,14 +31,19 @@ public class UpsizingTileSource implements ITileSource {
   @Override
   public int getMinimumZoomLevel() { return base_.getMinimumZoomLevel(); }
   @Override
-  public String getTileRelativeFilenameString(MapTile aTile) { return base_.getTileRelativeFilenameString(aTile); }
+  public String getTileRelativeFilenameString(long pMapTileIndex) {
+    return base_.getTileRelativeFilenameString(pMapTileIndex);
+  }
 
-  public String getTileURLString(MapTile aTile) {
-    return online_ != null ? online_.getTileURLString(aTile) : null;
+  public String getTileURLString(long pMapTileIndex) {
+    return online_ != null ? online_.getTileURLString(pMapTileIndex) : null;
   }
 
   @Override
   public int getTileSizePixels() { return upsize_; }
+
+  @Override
+  public String getCopyrightNotice() { return base_.getCopyrightNotice(); }
 
   @Override
   public Drawable getDrawable(String aFilePath) throws BitmapTileSourceBase.LowMemoryException {

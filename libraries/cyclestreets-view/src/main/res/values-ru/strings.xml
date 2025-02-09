@@ -1,8 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-  <string name="app_name">CycleStreets</string>
-  
+  <string name="route_map">Планировщик путешествий</string>
+  <string name="itinerary">Маршрут</string>
+  <string name="elevation">Высота</string>
+  <string name="photomap">Фотокарта</string>
+  <string name="photo_upload">Добавить фото</string>
+  <string name="settings">Настройки</string>
+  <string name="about">О апликации</string>
+  <string name="blog">Блог</string>
+  <string name="blog_updated">Блог - обновился</string>
+
   <string name="all_button_back">Назад</string>
   <string name="all_button_next">Следующий</string>
   <string name="all_button_save">Сохранить</string>
@@ -22,10 +30,15 @@
   <string name="route_finding_new">Получение маршрута от CycleStreets.net, пожалуйста, подождите</string>
   <string name="route_fetching_existing">Получение маршрута от CycleStreets.net, пожалуйста, подождите</string>
   <string name="route_finding_failed">Маршрут не удалось найти</string>
+  <string name="alt_route_finding_failed">Alternative route could not be retrieved.  Try pressing the back button to remove last waypoint.</string>
   <string name="route_loading">Загрузка маршрута, пожалуйста, подождите</string>
+  <string name="route_max_waypoints">Maximum number of waypoints reached.</string>
 
   <string name="route_menu_change">Изменить тип маршрута</string>
+  <string name="route_menu_alternative">Alternative route</string>
+  <string name="alt_route_details">alt:</string>
   <string name="route_menu_change_reverse">Обратный маршрут</string>
+  <string name="route_menu_change_waypoints">Add / Remove waypoints</string>
   <string name="route_menu_change_share">Поделитесь этим маршрутом</string>
   <string name="route_menu_change_comment">Сделать комментарии по этому маршруту</string>
   <string name="route_menu_change_replan_fastest">Перепланировать как сами быстры</string>
@@ -54,6 +67,8 @@
   <string name="report_continue_without_photo_button">Продолжить без фото</string>
   <string name="report_title">Ваш отчет</string>
   <string name="report_location_hint">Где это место, которую отчет описывает?</string>
+
+  <string name="tap_here">More details...</string>
 
   <string name="tiles_map_pack_out_of_date">Этот пакет карты не может быть использована с этой версией приложения.\n\nвы хотите найти обновление?</string>
 
@@ -104,5 +119,32 @@
   <string name="account_clear_details_confirm">Вы уверены, что хотите удалить сохраненные данные учетной записи?</string>
   <string name="account_pending">Вы уже зарегистрировали аккаунт. Пожалуйста, проверьте свою электронную почту для проверки электронной почты.</string>
   <string name="account_registration_is_free_long">Регистрация абсолютно бесплатна и зарегистрированные пользователи могут добавлять фотографии. Для того, чтобы начать процесс регистрации, пожалуйста, введите свои данные в форму ниже.</string>
+
+  <string name="perm_needed">Permission needs granting in device settings.</string>
+
+  <string name="show_remaining_time">Показать оставшееся время</string>
+  <string name="show_ETA">Показать расчётное время прибытия</string>
+  <string name="remaining">Остаток</string>
+  <string name="slash_ETA">/ прибытие</string>
+
+  <string name="duration">Duration</string>
+  <string name="distance">Distance</string>
+  <string name="circular_route">Circular Route</string>
+  <string name="create_circular_route_desc">Create a circular route based on a duration or distance</string>
+  <string name="create_circular_route_button">Create circular route</string>
+  <string name="mins">mins</string>
+  <string name="choose_pois_to_route_via">Optionally, choose Points of Interest to route via:</string>
+  <string name="pois">POIs</string>
+  <string name="num_poitypes_selected">%1$s selected</string>
+
+  <!-- Waymark labels -->
+  <string name="waypoint_renumber_title">Remove or renumber waypoint</string>
+  <string name="waypoint_start_initial">S</string>
+  <string name="waypoint_finish_initial">F</string>
+  <string name="waypoint_start">Start</string>
+  <string name="waypoint">waypoint</string>
+  <string name="waypoint_finish">Finish</string>
+  <string name="remove_waypoint">Remove waypoint</string>
+  <string name="change_to">"Change to "</string>
 
 </resources>

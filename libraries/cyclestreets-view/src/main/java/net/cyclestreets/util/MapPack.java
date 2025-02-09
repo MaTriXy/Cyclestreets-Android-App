@@ -13,91 +13,95 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Environment;
 
+import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
+
 public class MapPack
 {
-  private static String MAPSFORGE_VERSION = "0.3.0";
-	
-  static public void searchGooglePlay(final Context context)
-  {
+  private static final String MAPSFORGE_FILE_FORMAT_VERSION = "0.4.0";
+
+  public static void searchGooglePlay(final Context context) {
     final Intent play = new Intent(Intent.ACTION_VIEW);
     play.setData(Uri.parse("market://search?q=net.cyclestreets"));
     context.startActivity(play);
-  } // searchGooglePlay
-  
-  static public List<MapPack> availableMapPacks()
-  {
+  }
+
+  public static List<MapPack> availableMapPacks(Context context) {
     final List<MapPack> packs = new ArrayList<>();
-    
-    final File obbDir = new File(Environment.getExternalStorageDirectory(), "Android/obb");
-    if(!obbDir.exists())
+
+    if (!PermissionsKt.hasPermission(context, READ_EXTERNAL_STORAGE))
       return packs;
-    
-    for(final File mapDir : obbDir.listFiles(new CycleStreetsMapFilter()))
-    {
+
+    final File obbDir = new File(Environment.getExternalStorageDirectory(), "Android/obb");
+    if (!obbDir.exists())
+      return packs;
+
+    File[] files = obbDir.listFiles(new CycleStreetsMapFilter());
+    if (files == null)
+      return packs;
+
+    for (final File mapDir : files) {
       final File map = findMapFile(mapDir, "main.");
       final Properties props = mapProperties(mapDir);
       final String name = props.getProperty("title");
       final String version = props.getProperty("version");
-      if(map == null || name == null)
+      if (map == null || name == null)
         continue;
 
       packs.add(new MapPack(name, version, map));
-    } // for
-    
+    }
+
     return packs;
-  } // availableMapPacks
-  
-  static public MapPack findByPackage(final String packageName)
-  {
-    for(final MapPack pack : availableMapPacks())
-      if(pack.path().contains(packageName))
+  }
+
+  public static MapPack findByPackage(final Context context, final String packageName) {
+    for (final MapPack pack : availableMapPacks(context))
+      if (pack.path().contains(packageName))
         return pack;
     return null;
-  } // findByPackage
+  }
 
-  static private File findMapFile(final File mapDir, final String prefix)
-  {
-    for(final File c : mapDir.listFiles())
-      if(c.getName().startsWith(prefix))
+  private static File findMapFile(final File mapDir, final String prefix) {
+    File[] files = mapDir.listFiles();
+    if (files == null)
+      return null;
+
+    for (final File c : files)
+      if (c.getName().startsWith(prefix))
         return c;
     return null;
-  } // findMapFile
-  
-  static private Properties mapProperties(final File mapDir)
-  {
+  }
+
+  private static Properties mapProperties(final File mapDir) {
     final Properties details = new Properties();
     try {
       final File detailsFile = findMapFile(mapDir, "patch.");
       details.load(new FileInputStream(detailsFile));
-    } // try
-    catch(IOException | RuntimeException e) {
-    } // catch
+    }
+    catch (IOException | RuntimeException e) {
+    }
     return details;
-  } // mapName
-  
-  static private class CycleStreetsMapFilter implements FilenameFilter
-  {
-    public boolean accept(final File dir, final String name)
-    {
+  }
+
+  private static class CycleStreetsMapFilter implements FilenameFilter  {
+    public boolean accept(final File dir, final String name) {
       return name.contains("net.cyclestreets.maps");
-    } // accept
-  } // class CycleStreetsMapFilter
+    }
+  }
 
   //////////////////////////////////////////////////////
   private final String name_;
   private final String path_;
   private final String version_;
-  
+
   private MapPack(final String n,
-		  		  final String v,
-		  		  final File p) 
-  { 
+            final String v,
+            final File p) {
     name_ = n;
     path_ = p.getAbsolutePath();
     version_ = v;
-  } // MapPack
-  
+  }
+
   public String name() { return name_; }
   public String path() { return path_; }
-  public boolean current() { return MAPSFORGE_VERSION.equals(version_); }
-} // class MapPack
+  public boolean current() { return MAPSFORGE_FILE_FORMAT_VERSION.equals(version_); }
+}

@@ -1,6 +1,19 @@
 evaluationDependsOn(':libraries:cyclestreets-view')
 
+android {
+  testOptions {
+    unitTests {
+      includeAndroidResources = true
+    }
+  }
+    namespace 'net.cyclestreets.fragments'
+}
+
 dependencies {
-  compile project(':libraries:cyclestreets-view')
-  compile 'com.jjoe64:graphview:3.1.4'
+  api project(':libraries:cyclestreets-view')
+  implementation 'com.jjoe64:graphview:4.2.2'
+
+  testImplementation "junit:junit:${rootProject.ext.junitVersion}"
+  testImplementation "org.assertj:assertj-core:${rootProject.ext.assertjVersion}"
+  testImplementation "org.robolectric:robolectric:${rootProject.ext.robolectricVersion}"
 }

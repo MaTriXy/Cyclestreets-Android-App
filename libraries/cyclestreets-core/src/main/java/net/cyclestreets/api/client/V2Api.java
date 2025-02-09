@@ -24,13 +24,13 @@ import retrofit2.http.Query;
 public interface V2Api {
 
   @GET("/v2/pois.types")
-  Call<PoiTypesDto> getPOICategories(@Query("icons") int iconSize);
+  Call<PoiTypesDto> getPOICategories();
 
-  @GET("/v2/pois.locations?fields=id,name,notes,website,latitude,longitude")
+  @GET("/v2/pois.locations?fields=id,latitude,longitude,name,notes,osmTags,website")
   Call<FeatureCollection> getPOIs(@Query("type") String type,
                                   @Query("bbox") String bbox);
 
-  @GET("/v2/pois.locations?fields=id,name,notes,website,latitude,longitude&limit=150")
+  @GET("/v2/pois.locations?fields=id,latitude,longitude,name,notes,osmTags,website&limit=150")
   Call<FeatureCollection> getPOIs(@Query("type")  String type,
                                   @Query("longitude") double lon,
                                   @Query("latitude") double lat,
@@ -40,7 +40,10 @@ public interface V2Api {
   Call<FeatureCollection> geoCoder(@Query("q") String search,
                                    @Query("bbox") String bbox);
 
-  @GET("/v2/photomap.locations?fields=id,caption,categoryId,metacategoryId,hasVideo,videoFormats,thumbnailUrl,shortlink&limit=45&thumbnailsize=640")
+  @GET("/v2/photomap.location?fields=id,caption,datetime,categoryId,metacategoryId,hasVideo,videoFormats,thumbnailUrl,shortlink&limit=45&thumbnailsize=640")
+  Call<FeatureCollection> getPhoto(@Query("id") long id);
+
+  @GET("/v2/photomap.locations?fields=id,caption,datetime,categoryId,metacategoryId,hasVideo,videoFormats,thumbnailUrl,shortlink&limit=45&thumbnailsize=640")
   Call<FeatureCollection> getPhotos(@Query("bbox") String bbox);
 
   @GET("/v2/journeys.user?format=flat&datetime=friendly")

@@ -6,6 +6,7 @@ import java.lang.ref.WeakReference;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Point;
 import android.os.AsyncTask;
 import android.view.WindowManager;
 import android.widget.ImageView;
@@ -26,7 +27,7 @@ public class ImageDownloader {
                          final ImageView imageView) {
     final BitmapDownloaderTask task = new BitmapDownloaderTask(imageView);
     task.execute(url);
-  } // get
+  }
 
   //////////////////////////
   private static class BitmapDownloaderTask extends AsyncTask<String, Void, Bitmap> {
@@ -51,14 +52,16 @@ public class ImageDownloader {
 
       if (imageViewReference == null)
         return;
-      
+
       final ImageView imageView = imageViewReference.get();
-      if (imageView == null) 
+      if (imageView == null)
         return;
 
       final WindowManager wm = (WindowManager)imageView.getContext().getSystemService(Context.WINDOW_SERVICE);
-      final int device_height = wm.getDefaultDisplay().getHeight();
-      final int device_width = wm.getDefaultDisplay().getWidth();
+      final Point point = new Point();
+      wm.getDefaultDisplay().getSize(point);
+      final int device_height = point.y;
+      final int device_width = point.x;
       final int height = (device_height > device_width)
           ? device_height / 10 * 5
           : device_height / 10 * 6;

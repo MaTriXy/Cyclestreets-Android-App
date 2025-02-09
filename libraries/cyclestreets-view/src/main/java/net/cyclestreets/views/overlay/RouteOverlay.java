@@ -9,14 +9,13 @@ import net.cyclestreets.routing.Route;
 import net.cyclestreets.routing.Segment;
 import net.cyclestreets.routing.Segments;
 import net.cyclestreets.routing.Waypoints;
-import net.cyclestreets.routing.Route.Listener;
+import net.cyclestreets.views.CycleMapView;
 
 import org.osmdroid.api.IGeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.api.IProjection;
 import org.osmdroid.views.overlay.Overlay;
 
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.graphics.Canvas;
@@ -25,130 +24,138 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Point;
 
-public class RouteOverlay extends Overlay implements PauseResumeListener, Listener
+// Overlay is used for main route and alternative route (2 instances)
+public class RouteOverlay extends Overlay implements PauseResumeListener, Route.Listener
 {
-  static public int ROUTE_COLOUR = 0x80ff00ff;
-  static public int HIGHLIGHT_COLOUR = 0xA000ff00;
+  private CycleMapView cMapView;
+
+  private static int ROUTE_COLOUR = 0x80ff00ff;
+  private static int HIGHLIGHT_COLOUR = 0xA000ff00;
+
+  private static int ALT_ROUTE_COLOUR = 0x808080ff;
+
+  private boolean altRoute;
 
   private Segments route_;
 
-  private final Paint rideBrush_;
-  private final Paint walkBrush_;
-  private final Paint hiRideBrush_;
-  private final Paint hiWalkBrush_;
-   
+  private Paint rideBrush_;
+  private Paint walkBrush_;
+  private Paint hiRideBrush_;
+  private Paint hiWalkBrush_;
+
   private List<Path> ridePath_;
   private List<Path> walkPath_;
   private List<Path> highlightPath_;
-  
+
   private int zoomLevel_ = -1;
   private Segment highlight_;
   private IGeoPoint mapCentre_;
 
-  public RouteOverlay(final Context context) 
-  {
-    super(context);
-    
-    rideBrush_ = createBrush(ROUTE_COLOUR);
-    walkBrush_ = createBrush(ROUTE_COLOUR);
+  public RouteOverlay(CycleMapView cycleMapView, boolean pAltRoute) {
+    super();
+    cMapView = cycleMapView;
+    altRoute = pAltRoute;
+    if (altRoute) {
+      createBrushes(ALT_ROUTE_COLOUR);
+    }
+    else {
+      createBrushes(ROUTE_COLOUR);
+      hiRideBrush_ = createBrush(HIGHLIGHT_COLOUR);
+      hiWalkBrush_ = createBrush(HIGHLIGHT_COLOUR);
+      hiWalkBrush_.setPathEffect(new DashPathEffect(new float[] {5, 5}, 0));
+
+      highlight_ = null;
+    }
+
+    reset();
+  }
+
+  private void createBrushes(int colour) {
+    rideBrush_ = createBrush(colour);
+    walkBrush_ = createBrush(colour);
     walkBrush_.setPathEffect(new DashPathEffect(new float[] {5, 5}, 0));
 
-    hiRideBrush_ = createBrush(HIGHLIGHT_COLOUR);
-    hiWalkBrush_ = createBrush(HIGHLIGHT_COLOUR);
-    hiWalkBrush_.setPathEffect(new DashPathEffect(new float[] {5, 5}, 0));
+  }
 
-    highlight_ = null;
-    
-    reset();
-  } // PathOverlay
-	
-  private Paint createBrush(int colour)
-  {
+  private Paint createBrush(int colour) {
     final Paint brush = new Paint();
-    
+
     brush.setColor(colour);
     brush.setStrokeWidth(2.0f);
     brush.setStyle(Paint.Style.STROKE);
     brush.setStrokeWidth(10.0f);
-    
-    return brush;
-  } // createBrush	
 
-  private void setRoute(final Segments routeSegments)
-  {
+    return brush;
+  }
+
+  public void setRoute(final Segments routeSegments) {
     reset();
     route_ = routeSegments;
-  } // setRoute
+    if (altRoute) cMapView.postInvalidate();
+  }
 
-  private void reset() 
-  {
+  private void reset() {
     ridePath_ = null;
     route_ = null;
-  } // clearPath
+  }
 
   @Override
-  public void draw(final Canvas canvas, final MapView mapView, final boolean shadow) 
-  {
-    if (shadow) 
+  public void draw(final Canvas canvas, final MapView mapView, final boolean shadow) {
+    if (shadow)
       return;
- 
-    if (route_ == null || route_.count() < 2) 
+
+    if (route_ == null || route_.count() < 2)
       return;
 
     final IGeoPoint centre = mapView.getMapCenter();
 
-    if(zoomLevel_ != mapView.getZoomLevel() ||
+    if (zoomLevel_ != (int)mapView.getZoomLevelDouble() ||
        highlight_ != Route.journey().activeSegment() ||
-       !centre.equals(mapCentre_))
-    {
+       !centre.equals(mapCentre_)) {
       ridePath_ = null;
-      zoomLevel_ = mapView.getProjection().getZoomLevel();
+      zoomLevel_ = (int)mapView.getProjection().getZoomLevel();
       highlight_ = Route.journey().activeSegment();
       mapCentre_ = centre;
-    } // if ...
-  
-    if(ridePath_ == null)
+    }
+
+    if (ridePath_ == null)
       drawSegments(mapView.getProjection());
 
-    for(Path path : ridePath_)
+    for (Path path : ridePath_)
       canvas.drawPath(path, rideBrush_);
-    for(Path path : walkPath_)
+    for (Path path : walkPath_)
       canvas.drawPath(path, walkBrush_);
-    for(Path path : highlightPath_)
+    for (Path path : highlightPath_)
       canvas.drawPath(path, Route.journey().activeSegment().walk() ? hiWalkBrush_ : hiRideBrush_);
-  } // draw
+  }
 
-  private Path newPath()
-  {
+  private Path newPath() {
     final Path path = new Path();
     path.rewind();
     return path;
-  } // newPath
-  
-  private void drawSegments(final IProjection projection)
-  {
+  }
+
+  private void drawSegments(final IProjection projection) {
     ridePath_ = new ArrayList<>();
     walkPath_ = new ArrayList<>();
     highlightPath_ = new ArrayList<>();
 
     Point screenPoint = new Point();
-    for(Segment s : route_) {
+    for (Segment s : route_) {
       final Path path = newPath();
 
       boolean first = true;
-      for(Iterator<IGeoPoint> i = s.points(); i.hasNext(); )
-      {
+      for (Iterator<IGeoPoint> i = s.points(); i.hasNext(); ) {
         final IGeoPoint gp = i.next();
         screenPoint = projection.toPixels(gp, screenPoint);
-        
-        if(first)
-        {
+
+        if (first) {
           path.moveTo(screenPoint.x, screenPoint.y);
           first = false;
-        } 
+        }
         else
           path.lineTo(screenPoint.x, screenPoint.y);
-      } // for ...
+      }
 
       if (Route.journey().activeSegment() == s)
         highlightPath_.add(path);
@@ -156,31 +163,37 @@ public class RouteOverlay extends Overlay implements PauseResumeListener, Listen
         walkPath_.add(path);
       else
         ridePath_.add(path);
-    } // for ...
-  } // drawSegments
+    }
+  }
 
   // pause/resume
   @Override
-  public void onResume(SharedPreferences prefs)
-  {
-    Route.registerListener(this);
-  } // onResume
+  public void onResume(SharedPreferences prefs) {
+    if (altRoute) {
+      // Just do softregister for alt routeoverlay so that OnNewJourney below doesn't get called for alt route
+      Route.softRegisterListener(this);
+      Route.setAltRouteOverlay(this);
+      Route.reloadAltRoute();
+    }
+    else
+      Route.registerListener(this);
+  }
 
   @Override
-  public void onPause(Editor prefs)
-  {
+  public void onPause(Editor prefs) {
     Route.unregisterListener(this);
-  } // onPause
+  }
 
   @Override
-  public void onNewJourney(final Journey journey, final Waypoints waypoints)
-  {
-    setRoute(journey.segments());
-  } // onNewJourney
-  
+  public void onNewJourney(final Journey journey, final Waypoints waypoints) {
+    if (!altRoute)
+      setRoute(journey.getSegments());
+    else
+      reset();
+  }
+
   @Override
-  public void onResetJourney()
-  {
+  public void onResetJourney() {
     reset();
-  } // onReset
-} // Path
+  }
+}

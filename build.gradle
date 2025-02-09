@@ -1,131 +1,122 @@
 buildscript {
+  ext.kotlinVersion = '1.9.20'
   repositories {
-    jcenter()
+    google()
+    mavenCentral()
   }
   dependencies {
-    classpath 'com.android.tools.build:gradle:2.2.1'
+    classpath 'com.android.tools.build:gradle:8.5.1'
+    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
   }
 }
 
-configure(subprojects.findAll { it.path.startsWith(':custom-versions:') ||
-                                it.path.startsWith(':cyclestreets') }) {
-  if (!file("${projectDir}/build.gradle").exists())
-    return
+ext {
+  // From e.g. https://source.android.com/setup/start/build-numbers
+  // Android 14 	     34  Android14
+  // Android 13 	     33  Android13
+  // Android 12L         32  Android12L
+  // Android 12 	     31  Android12
+  // Android 11          30  Android11
+  // Android 10          29  Android10
+  // Android 9.0         28  PIE
+  // Android 8.1         27  OREO_MR1
+  // Android 8.0         26  OREO
+  // Android 7.1.1, 7.1  25  NOUGAT_MR1
+  // Android 7.0         24  NOUGAT
+  // Android 6.0         23  MARSHMALLOW
+  // Android 5.1         22  LOLLIPOP_MR1
+  // Android 5.0         21  LOLLIPOP
+  // Android 4.4W        20  KITKAT_WATCH
+  // Android 4.4         19  KITKAT
+  // Android 4.3         18  JELLY_BEAN_MR2
+  // Android 4.2, 4.2.2  17  JELLY_BEAN_MR1
 
-  apply plugin: 'com.android.application'
+  // Remember to keep these values in sync with .travis.yml
+  compileSdkVersion=34
+  minSdkVersion=23
+  targetSdkVersion=34
 
-  signingKey(it)
-  manifestProperties(it)
-  versionProperties(it)
-} // configure apks
+  // java version
+  javaVersion = JavaVersion.VERSION_11
 
-configure(subprojects.findAll { it.path.startsWith(':libraries:') }) {
-  if (!file("${projectDir}/build.gradle").exists())
-    return
+  // centrally manage some other dependencies
+  mapsforgeVersion = '0.20.0'
+  osmdroidVersion = '6.1.18'
 
-  apply plugin: 'com.android.library'
-} // configure libraries
+  // test dependencies
+  assertjVersion = '3.25.3'
+  junitVersion = '4.13.2'
+  mockitoVersion = '5.11.0'
+  robolectricVersion = '4.11.1'
+}
 
+// Configure common settings in all projects
 subprojects {
   if (!file("${projectDir}/build.gradle").exists())
     return
 
-  repositories {
-    jcenter()
+  gradle.projectsEvaluated {
+    tasks.withType(JavaCompile).configureEach {
+      options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+    }
+    tasks.withType(Test).tap {
+      configureEach {
+        testLogging {
+          exceptionFormat 'full'
+          showCauses true
+          showExceptions true
+          showStackTraces true
+          events = ['passed', 'failed', 'skipped']
+        }
+      }
+    }
   }
 
-  android {
-    Properties appConfig = loadProperties("${rootDir}/config.properties")
+  buildscript {
+    repositories {
+      mavenCentral()
+      google() // required for Android plugins
+    }
+  }
 
-    compileSdkVersion appConfig['compileSdkVersion'].toInteger()
-    buildToolsVersion appConfig['toolsVersion']
+  repositories {
+    mavenCentral()
+    google() // required for Android libraries
+    maven { url "https://jitpack.io" } // required for https://github.com/smart-fun/XmlToJson
+  }
+
+  if (projectDir.getName().equals('cyclestreets.app')) {
+    apply plugin: 'com.android.application'
+  } else {
+    apply plugin: 'com.android.library'
+  }
+
+  apply plugin: 'kotlin-android'
+
+  android {
+    compileSdkVersion rootProject.ext.compileSdkVersion
 
     compileOptions {
-      sourceCompatibility JavaVersion.VERSION_1_7
-      targetCompatibility JavaVersion.VERSION_1_7
+      sourceCompatibility rootProject.ext.javaVersion
+      targetCompatibility rootProject.ext.javaVersion
+    }
+    kotlinOptions {
+      jvmTarget = '11'
     }
 
     defaultConfig {
-      minSdkVersion appConfig['minSdkVersion'].toInteger()
-      targetSdkVersion appConfig['targetSdkVersion'].toInteger()
+      minSdkVersion rootProject.ext.minSdkVersion
+      targetSdkVersion rootProject.ext.targetSdkVersion
     }
 
-    packagingOptions {
-      exclude 'META-INF/LICENSE'
-      exclude 'META-INF/LICENSE.txt'
-      exclude 'META-INF/DEPENDENCIES'
-      exclude 'META-INF/NOTICE'
-      exclude 'META-INF/NOTICE.txt'
-    } // packagingOptions
-
-    // Required due to strictness of the Android developer tools.  See lint.xml for full details.
     lintOptions {
+      // Required due to strictness of the Android developer tools.  See lint.xml for full details.
       lintConfig rootProject.file('gradle/lint.xml')
+
+      // Kotlin (nullability) interop check - potentially useful but quite noisy
+      // check 'Interoperability'
     }
-  } // android
-} // subprojects
 
-def loadProperties(fileName) {
-  Properties props = new Properties()
-  props.load(new FileInputStream(file(fileName)))
-  return props;
-} // loadProperties
-
-def manifestProperties(project) {
-  def cyclestreetsDetails = project.file("cyclestreets.properties")
-  if (!cyclestreetsDetails.exists()) {
-    println ":${project.name}:No cyclestreets.properties"
-    return;
-  } // no cyclestreets props
-
-  project.android {
-    buildTypes {
-      all {
-        manifestPlaceholders = loadProperties(cyclestreetsDetails)
-      }
-    } // buildType
-  } // android
-} // manifestProperties
-
-def versionProperties(project) {
-  def versionDetails = project.file("version.properties")
-  def versionConfig = [ versionCode: "-1", versionName: "unknown" ]
-  if (versionDetails.exists())
-    versionConfig = loadProperties(versionDetails)
-  else
-    println ":${project.name}:No version.properties, using placeholder defaults"
-
-  project.android {
-    defaultConfig {
-      versionCode versionConfig['versionCode'].toInteger()
-      versionName versionConfig['versionName']
-    }
-  } // android
-} // versionProperties
-
-def signingKey(project) {
-  def licenseDetails = project.file("license.properties");
-  if (!licenseDetails.exists()) {
-    println ":${project.name}:No license.properties"
-    return;
-  } // licenseDetails.exists
-
-  Properties props = loadProperties(licenseDetails)
-
-  project.android {
-    signingConfigs {
-      release {
-        storeFile project.file(props['key.store'])
-        storePassword props['key.password']
-        keyAlias props['key.alias']
-        keyPassword props['key.password']
-      }
-    } // signingConfigs
-
-    buildTypes {
-      release {
-        signingConfig signingConfigs.release
-      }
-    } // buildTypes
-  } // android
-} // signingKey
+    buildFeatures.viewBinding = true
+  }
+}

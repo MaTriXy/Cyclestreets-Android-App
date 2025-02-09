@@ -1,7 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-  <string name="app_name">CycleStreets</string>
+  <string name="route_map">Yolculuk Planlayıcısı</string>
+  <string name="itinerary">Yol Klavuzu</string>
+  <string name="elevation">Yükselti</string>
+  <string name="photomap">Fotoharita</string>
+  <string name="photo_upload">Fotoğraf Ekle</string>
+  <string name="settings">Ayarlar</string>
+  <string name="about">Hakkında</string>
+  <string name="blog">Blog</string>
+  <string name="blog_updated">Blog - güncellenmiş</string>
+
   <string name="all_button_back">Geri</string>
   <string name="all_button_next">İleri</string>
   <string name="all_button_save">Kaydet</string>
@@ -21,10 +30,15 @@
   <string name="route_finding_new">Güzergâh, CycleStreets.net adresinden temin ediliyor, lütfen bekleyiniz</string>
   <string name="route_fetching_existing">Güzergâh, CycleStreets.net adresinden çekiliyor, lütfen bekleyiniz</string>
   <string name="route_finding_failed">Güzergâh bulunamadı</string>
+  <string name="alt_route_finding_failed">Alternative route could not be retrieved.  Try pressing the back button to remove last waypoint.</string>
   <string name="route_loading">Güzergâh yükleniyor, lütfen bekleyiniz</string>
+  <string name="route_max_waypoints">Maximum number of waypoints reached.</string>
 
   <string name="route_menu_change">Güzergâh tipini değiştir</string>
+  <string name="route_menu_alternative">Alternative route</string>
+  <string name="alt_route_details">alt:</string>
   <string name="route_menu_change_reverse">Güzergahı ters çevir</string>
+  <string name="route_menu_change_waypoints">Add / Remove waypoints</string>
   <string name="route_menu_change_share">Güzergahı paylaş</string>
   <string name="route_menu_change_comment">Güzergaha yorum bırak</string>
   <string name="route_menu_change_replan_fastest">En hızlı olacak şekilde yeniden planla</string>
@@ -53,6 +67,8 @@
   <string name="report_continue_without_photo_button">Fotoğrafsız devam et</string>
   <string name="report_title">Raporunuz</string>
   <string name="report_location_hint">Neredeki konumda raporu taımladın?</string>
+
+  <string name="tap_here">More details...</string>
 
   <string name="tiles_map_pack_out_of_date">Bu harita paketi uygulamasının bu sürümü kullanılamaz.\n\nBir güncelleme aramak ister misiniz?</string>
 
@@ -101,5 +117,32 @@
   <string name="account_clear_details_confirm">Kayıtlı hesap detaylarını silmek istediğine emin misin?</string>
   <string name="account_pending">Zaten kayıtlı hesabınız mevcut.  Lütfen email doğrulamanızı kontrol edin.</string>
   <string name="account_registration_is_free_long">Kayıt ücretsizdir ve kayıtlı kullanıcılar fotoğraf ekleyebilirsiniz. Kayıt işlemi aşağıdaki forma bilgilerinizi girin başlatın.</string>
+
+  <string name="perm_needed">Permission needs granting in device settings.</string>
+
+  <string name="show_remaining_time">Show remaining time</string>
+  <string name="show_ETA">Show estimated time of arrival</string>
+  <string name="remaining">Remaining</string>
+  <string name="slash_ETA">/ ETA</string>
+
+  <string name="duration">Duration</string>
+  <string name="distance">Distance</string>
+  <string name="circular_route">Circular Route</string>
+  <string name="create_circular_route_desc">Create a circular route based on a duration or distance</string>
+  <string name="create_circular_route_button">Create circular route</string>
+  <string name="mins">mins</string>
+  <string name="choose_pois_to_route_via">Optionally, choose Points of Interest to route via:</string>
+  <string name="pois">POIs</string>
+  <string name="num_poitypes_selected">%1$s selected</string>
+
+  <!-- Waymark labels -->
+  <string name="waypoint_renumber_title">Remove or renumber waypoint</string>
+  <string name="waypoint_start_initial">S</string>
+  <string name="waypoint_finish_initial">F</string>
+  <string name="waypoint_start">Start</string>
+  <string name="waypoint">waypoint</string>
+  <string name="waypoint_finish">Finish</string>
+  <string name="remove_waypoint">Remove waypoint</string>
+  <string name="change_to">"Change to "</string>
 
 </resources>

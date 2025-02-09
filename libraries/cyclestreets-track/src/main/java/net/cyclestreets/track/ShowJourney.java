@@ -7,21 +7,23 @@ import android.widget.TextView;
 
 import net.cyclestreets.views.CycleMapView;
 
-public class ShowJourney extends Activity {
-	private CycleMapView mapView_;
+import static net.cyclestreets.CycleStreetsConstantsKt.DEFAULT_ZOOM_LEVEL;
 
-	@Override
-	public void onCreate(final Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
+public class ShowJourney extends Activity {
+  private CycleMapView mapView_;
+
+  @Override
+  public void onCreate(final Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
 
     setContentView(R.layout.completed_journey);
 
     mapView_ = new CycleMapView(this, getClass().getName());
     mapView_.hideLocationButton();
-    final RelativeLayout v = (RelativeLayout)findViewById(R.id.mapholder);
+    final RelativeLayout v = findViewById(R.id.mapholder);
     v.addView(mapView_,
-              new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.FILL_PARENT,
-                                              RelativeLayout.LayoutParams.FILL_PARENT));
+              new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
+                                              RelativeLayout.LayoutParams.MATCH_PARENT));
 
     final Bundle cmds = getIntent().getExtras();
     final long journeyId = cmds.getLong("showtrip");
@@ -32,12 +34,12 @@ public class ShowJourney extends Activity {
     setText(R.id.journey_start, trip.fancyStart());
 
     // zoomToBoundingBox works better if setZoom first
-    mapView_.getController().setZoom(14);
+    mapView_.getController().setZoom(DEFAULT_ZOOM_LEVEL);
     mapView_.overlayPushTop(JourneyOverlay.CompletedJourneyOverlay(this, mapView_, trip));
-  } // onCreate
+  }
 
   private void setText(final int id, final String text) {
-    final TextView tv = (TextView)findViewById(id);
+    final TextView tv = findViewById(id);
     tv.setText(text);
-  } // setText
-} // ShowJourney
+  }
+}

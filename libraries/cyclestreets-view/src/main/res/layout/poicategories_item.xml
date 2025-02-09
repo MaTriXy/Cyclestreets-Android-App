@@ -1,34 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
-    android:layout_height="?android:attr/listPreferredItemHeight">   
+  android:layout_width="fill_parent"
+  android:layout_height="?android:attr/listPreferredItemHeight">
     <ImageView
-        android:id="@+id/icon"
-        android:layout_width="wrap_content"
-        android:layout_height="fill_parent"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentBottom="true"
-        android:layout_marginLeft="12dip"
-        android:layout_marginRight="6dip"
-        android:src="@drawable/ic_launcher" />
+      android:id="@+id/icon"
+      android:layout_width="32dp"
+      android:layout_height="fill_parent"
+      android:layout_alignParentTop="true"
+      android:layout_alignParentBottom="true"
+      android:layout_marginLeft="12dp"
+      android:layout_marginRight="6dp"
+      android:src="@drawable/placeholder_poi_64x64" />
+                   <!-- We actually download our POI icons dynamically from the CycleStreets APIs,
+                        at 64x64 resolution as if targeting HDPI screens; so we use this icon at
+                        this size in this drawable-hdpi holder as a placeholder. -->
     <TextView
-    	android:id="@+id/name"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_toRightOf="@id/icon"
-        android:layout_centerVertical="true"
-        android:gravity="center_vertical"
-        android:ellipsize="marquee"
-        android:text="@string/poi_menu_entry"
-      />
-    <CheckBox 
+      android:id="@+id/name"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_toRightOf="@id/icon"
+      android:layout_centerVertical="true"
+      android:gravity="center_vertical"
+      android:ellipsize="marquee"
+      android:text="@string/poi_menu_entry" />
+    <CheckBox
       android:id="@+id/checkbox"
-        android:layout_width="wrap_content"
-        android:layout_height="fill_parent"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        android:layout_marginLeft="6dip"
-        android:layout_marginRight="12dip"
-        android:text=""/>
+      android:layout_width="wrap_content"
+      android:layout_height="fill_parent"
+      android:layout_alignParentTop="true"
+      android:layout_alignParentBottom="true"
+      android:layout_alignParentRight="true"
+      android:layout_marginLeft="6dp"
+      android:layout_marginRight="12dp"
+      android:text="" />
 </RelativeLayout>

@@ -1,13 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-  <string name="navigation_drawer_open">Открыть панель навигации</string>
-  <string name="navigation_drawer_close">Закрыть панель навигации</string>
-  <string name="app_name">CycleStreets</string>
-  <string name="settings">Настройки</string>
-  <string name="about">О апликации</string>
-  <string name="blog">Блог</string>
-  <string name="go">Найти маршрут</string>
+  <string name="find_route">Найти маршрут</string>
+  <string name="load_route">Load route</string>
   <string name="addvia">Добавить точку</string>
   <string name="blog_cyclestreets_update">Обновление блога CycleStreets</string>
   <string name="blog_update">Обновлении блога</string>
@@ -38,7 +33,6 @@
   <string name="ic_menu_liveride">Начатъ LiveRide</string>
   <string name="ic_menu_stopride">Закончить LiveRide</string>
   <string name="ic_menu_addlocation">Новое место</string>
-  <string name="hello_blank_fragment">Привет пустой фрагмент</string>
 
   <string name="location_list_header">Добавить новые места с помощью кнопки выше.\nНажмите и удерживайте местоположение в списке, чтобы изменить или удалить.</string>
 
@@ -46,11 +40,9 @@
   <string name="elevation_calories_burned">Калории:</string>
   <string name="elevation_estimated_time">Время:</string>
   <string name="elevation_journey_number">Количество Путешествие:</string>
-  <!-- Do we really need the text "Fruit", Jez? :-) -->
-  <string name="elevation_fruit">Фрукты</string>
+  <string name="elevation_gain">Total elevation gain:</string>
+  <string name="elevation_loss">Total elevation loss:</string>
   <string name="elevation_route">маршрут</string>
-
-  <string name="about_version_default">net.cyclestreets</string>
 
   <string name="findplace_name_or_address">Поместите имя или адрес</string>
 
@@ -63,7 +55,8 @@
 
   <string name="location_editor_hint">Поместите метку на карте, а затем назовите местоположение.</string>
   <string name="location_editor_name">Название местоположения :</string>
-  <string name="routenumber_hint">Номер маршрута</string>
+  <string name="routenumber_desc">Routes previously planned on CycleStreets can be loaded here, by entering the journey number shown on the webpage or itinerary</string>
+  <string name="routenumber_hint">CycleStreets journey number</string>
 
   <string name="storedroutes_title_default">Маршрут </string>
   <string name="storedroutes_detail_default">Детали</string>

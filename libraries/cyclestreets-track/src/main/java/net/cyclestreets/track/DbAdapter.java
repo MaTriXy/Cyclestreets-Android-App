@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import net.cyclestreets.util.Logging;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +36,7 @@ public class DbAdapter {
   public static final String K_POINT_ALT   = "alt";
   public static final String K_POINT_SPEED = "speed";
 
-  private static final String TAG = "DbAdapter";
+  private static final String TAG = Logging.getTag(DbAdapter.class);
   private static final String TABLE_CREATE_TRIPS = "create table trips "
     + "(_id integer primary key autoincrement, purp text, start integer, endtime integer, "
     + "fancystart text, fancyinfo text, distance float, note text, age text, gender text, experience text, "
@@ -69,8 +70,8 @@ public class DbAdapter {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
       if (oldVersion < 22)
         db.execSQL("alter table " + DATA_TABLE_TRIPS + " add column experience text");
-    } // onUpgrade
-  } // DatabaseHelper
+    }
+  }
 
   public static int unfinishedTrip(final Context context) {
     final DbAdapter db = new DbAdapter(context.getApplicationContext());
@@ -85,14 +86,14 @@ public class DbAdapter {
       if (c.getCount() != 0) {
         c.moveToFirst();
         return c.getInt(c.getColumnIndex(K_TRIP_ROWID));
-      } // if ...
+      }
     } finally {
       c.close();
       db.close();
     }
 
     return -1;
-  } // availableForUpload
+  }
 
   public static List<TripData> unUploadedTrips(final Context context) {
     final List<Integer> tripIds = unUploadedTripIds(context);
@@ -102,7 +103,7 @@ public class DbAdapter {
       tripData.add(TripData.fetchTrip(context, id));
 
     return tripData;
-  } // unUploadedTrips
+  }
 
   public static List<Integer> unUploadedTripIds(final Context context) {
     final DbAdapter db = new DbAdapter(context.getApplicationContext());
@@ -117,18 +118,18 @@ public class DbAdapter {
           K_TRIP_STATUS + "=" + TripData.STATUS_COMPLETE_FAILED,
           null, null, null, null);
       c.moveToFirst();
-      while(!c.isAfterLast()) {
+      while (!c.isAfterLast()) {
         int id = c.getInt(c.getColumnIndex(K_TRIP_ROWID));
         result.add(id);
         c.moveToNext();
-      } // while
+      }
     } finally {
       c.close();
       db.close();
     }
 
     return result;
-  } // unUploadedTrips
+  }
 
   public DbAdapter(final Context ctx) {
     context_ = ctx;
@@ -249,11 +250,11 @@ public class DbAdapter {
 
       return distance;
     }
-    catch(RuntimeException e) {
+    catch (RuntimeException e) {
       String s = e.getMessage();
       throw new RuntimeException(e);
     }
-  } // totalDistance
+  }
 
   /**
    * Return a Cursor over the list of all notes in the database

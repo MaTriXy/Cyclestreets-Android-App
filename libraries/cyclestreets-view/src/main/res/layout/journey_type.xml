@@ -3,16 +3,15 @@
   android:orientation="horizontal"
   android:layout_width="match_parent"
   android:layout_height="wrap_content"
-  android:layout_marginLeft="2.0dip"
-  android:layout_marginTop="1.0dip"
-  android:layout_marginRight="4.0dip"
-  android:layout_marginBottom="5.0dip">
+  android:layout_marginLeft="2.0dp"
+  android:layout_marginTop="1.0dp"
+  android:layout_marginRight="4.0dp"
+  android:layout_marginBottom="5.0dp">
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
-        android:text="@string/route_type"
-        />
+        android:text="@string/route_type" />
     <Spinner
         android:id="@+id/routeTypeSpinner"
         android:layout_width="match_parent"

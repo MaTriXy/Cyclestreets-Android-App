@@ -6,20 +6,23 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
-import android.provider.Settings.System;
 
-import net.cyclestreets.util.ListFactory;
+import net.cyclestreets.CycleStreetsNotifications;
+
+import static android.provider.Settings.Secure;
+import static net.cyclestreets.CycleStreetsNotifications.CHANNEL_TRACK_ID;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Collections;
 import java.util.List;
 
 public class TripDataUploader extends AsyncTask<Void, Void, Boolean> {
   private int NOTIFICATION_ID = 1;
 
   public static void upload(final Context context, final TripData tripData) {
-    upload(context, ListFactory.list(tripData));
+    upload(context, Collections.singletonList(tripData));
   }
 
   public static void upload(final Context context, final List<TripData> tripData) {
@@ -33,7 +36,7 @@ public class TripDataUploader extends AsyncTask<Void, Void, Boolean> {
   private TripDataUploader(final Context context, final List<TripData> tripData) {
     context_ = context;
     tripData_ = tripData;
-  } // UploadDataTask
+  }
 
   protected Boolean doInBackground(Void... p) {
     for (final TripData td : tripData_) {
@@ -64,26 +67,25 @@ public class TripDataUploader extends AsyncTask<Void, Void, Boolean> {
         td.uploadFailed();
         warning("Upload failed.");
       }
-    } // for ...
+    }
     return true;
-  } // doInBackground
+  }
 
   private String deviceId() {
-    String androidId = System.getString(context_.getContentResolver(), System.ANDROID_ID);
+    String androidId = Secure.getString(context_.getContentResolver(), Secure.ANDROID_ID);
     String androidBase = "androidDeviceId-";
 
     if (androidId == null) { // This happens when running in the Emulator
       final String emulatorId = "android-RunningAsTestingDeleteMe";
       return emulatorId;
     }
-    String deviceId = androidBase.concat(androidId);
-    return deviceId;
-  } // deviceId
+    return androidBase.concat(androidId);
+  }
 
   private JSONObject parse(final byte[] result) throws Exception {
     final String s = new String(result, "UTF-8");
     return new JSONObject(s);
-  } // parse
+  }
 
   private static final String TRIP_COORDS_TIME = "r"; // "rec";
   private static final String TRIP_COORDS_LAT = "l"; // "lat";
@@ -96,14 +98,14 @@ public class TripDataUploader extends AsyncTask<Void, Void, Boolean> {
   private String coordsAsJSON(final TripData tripData) throws JSONException {
     final StringBuilder tripCoords = new StringBuilder();
 
-    for(CyclePoint cp : tripData.journey()) {
+    for (CyclePoint cp : tripData.journey()) {
       tripCoords.append(tripCoords.length() == 0 ? "{" : ",");
 
       JSONObject coord = new JSONObject();
 
       coord.put(TRIP_COORDS_TIME, cp.time);
-      coord.put(TRIP_COORDS_LAT, cp.getLatitudeE6()/1e6);
-      coord.put(TRIP_COORDS_LON, cp.getLongitudeE6()/1e6);
+      coord.put(TRIP_COORDS_LAT, cp.getLatitude());
+      coord.put(TRIP_COORDS_LON, cp.getLongitude());
       coord.put(TRIP_COORDS_ALT, cp.getAltitude());
       coord.put(TRIP_COORDS_SPEED, cp.speed);
       coord.put(TRIP_COORDS_HACCURACY, cp.accuracy);
@@ -118,7 +120,7 @@ public class TripDataUploader extends AsyncTask<Void, Void, Boolean> {
     tripCoords.append("}");
 
     return tripCoords.toString();
-  } // coordsAsJSON
+  }
 
   private String userAsJSON(final TripData tripData) throws JSONException {
     JSONObject user = new JSONObject();
@@ -130,7 +132,7 @@ public class TripDataUploader extends AsyncTask<Void, Void, Boolean> {
 
   private void notification(final String text) {
     showNotification(text, Notification.FLAG_NO_CLEAR | Notification.FLAG_ONGOING_EVENT);
-  } // notification
+  }
 
   private void warning(final String text) {
     showNotification(text, Notification.FLAG_AUTO_CANCEL);
@@ -143,19 +145,26 @@ public class TripDataUploader extends AsyncTask<Void, Void, Boolean> {
   }
 
   private Notification createNotification(final String text, final int flags) {
-    final Notification notification = new Notification(R.drawable.icon25, text, java.lang.System.currentTimeMillis());
-    notification.flags = flags;
     final Intent notificationIntent = new Intent(context_, TripDataUploader.class);
     final PendingIntent contentIntent = PendingIntent.getActivity(context_, 0, notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT);
-    notification.setLatestEventInfo(context_.getApplicationContext(), "Cycle Hackney", text, contentIntent);
+
+    Notification notification = CycleStreetsNotifications.INSTANCE.getBuilder(context_.getApplicationContext(), CHANNEL_TRACK_ID)
+            .setSmallIcon(R.drawable.icon25)
+            .setTicker(text)
+            .setWhen(java.lang.System.currentTimeMillis())
+            .setContentTitle("Cycle Hackney")
+            .setContentText(text)
+            .setContentIntent(contentIntent)
+            .build();
+    notification.flags = flags;
     return notification;
   }
 
   private void cancelNotification() {
     nm().cancel(NOTIFICATION_ID);
-  } // cancelNotification
+  }
 
   private NotificationManager nm() {
     return (NotificationManager)context_.getSystemService(Context.NOTIFICATION_SERVICE);
-  } // nm
-} // UploadDataTask
+  }
+}

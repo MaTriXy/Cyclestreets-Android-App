@@ -1,7 +1,7 @@
 package net.cyclestreets;
 
+import android.app.Activity;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
@@ -17,19 +17,23 @@ import net.cyclestreets.views.overlay.ThereOverlay;
 
 import org.osmdroid.api.IGeoPoint;
 
-public class LocationEditorActivity extends ActionBarActivity
+import static android.Manifest.permission.ACCESS_FINE_LOCATION;
+import static net.cyclestreets.util.PermissionsKt.hasPermission;
+import static net.cyclestreets.util.PermissionsKt.requestPermissionsResultAction;
+
+
+public class LocationEditorActivity extends Activity
     implements ThereOverlay.LocationListener,
                View.OnClickListener,
                TextWatcher {
+
   private CycleMapView map_;
   private ThereOverlay there_;
   private Button save_;
-  private Button cancel_;
   private EditText nameBox_;
   private LocationDatabase ldb_;
   private int localId_;
   private boolean firstTime_;
-
 
   @Override
   public void onCreate(final Bundle saved) {
@@ -44,12 +48,27 @@ public class LocationEditorActivity extends ActionBarActivity
     setupEditBox();
 
     firstTime_ = true;
-  } // onCreate
+  }
+
+  @Override
+  public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    for (int i = 0; i < permissions.length; i++) {
+      // (No need to check request code here as "follow location" is the only one requested here)
+      if (permissions[i].equals(ACCESS_FINE_LOCATION))  {
+        requestPermissionsResultAction(grantResults[i], permissions[i], () -> {
+          map_.doEnableFollowLocation();
+          map_.saveLocationPrefs();
+          return null;
+        });
+      }
+    }
+  }
 
   private void setupMap() {
-    final RelativeLayout v = (RelativeLayout)(findViewById(R.id.mapholder));
+    final RelativeLayout v = (findViewById(R.id.mapholder));
 
-    map_ = new CycleMapView(this, getClass().getName());
+    map_ = new CycleMapView(this, getClass().getName(), null);
 
     there_ = new ThereOverlay(this);
     there_.setLocationListener(this);
@@ -57,30 +76,34 @@ public class LocationEditorActivity extends ActionBarActivity
     map_.overlayPushTop(there_);
 
     v.addView(map_, new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT));
-    map_.enableAndFollowLocation();
+    if (hasPermission(this, ACCESS_FINE_LOCATION)) {
+      map_.enableAndFollowLocation();
+    }
     map_.onResume();
     there_.setMapView(map_);
-  } // setupMap
+  }
 
   private void setupButtons() {
-    save_ = (Button)findViewById(R.id.save);
+    save_ = findViewById(R.id.save);
     save_.setCompoundDrawablesWithIntrinsicBounds(0, 0, android.R.drawable.ic_menu_save, 0);
     save_.setOnClickListener(this);
     save_.setEnabled(false);
 
-    cancel_ = (Button)findViewById(R.id.cancel);
+    Button cancel_ = findViewById(R.id.cancel);
     cancel_.setCompoundDrawablesWithIntrinsicBounds(android.R.drawable.ic_menu_close_clear_cancel, 0, 0, 0);
     cancel_.setOnClickListener(this);
-  } // setupButtons
+  }
 
   private void setupEditBox() {
-    nameBox_ = (EditText)findViewById(R.id.name);
+    nameBox_ = findViewById(R.id.name);
     nameBox_.addTextChangedListener(this);
-  } // setupEditBox
+  }
 
   private void setupLocation() {
     if (localId_ == -1) {
-      map_.enableAndFollowLocation();
+      if (hasPermission(this, ACCESS_FINE_LOCATION)) {
+        map_.enableAndFollowLocation();
+      }
       return;
     }
 
@@ -90,7 +113,7 @@ public class LocationEditorActivity extends ActionBarActivity
     map_.centreOn(location.where());
 
     checkAllowSave();
-  } // setupLocation
+  }
 
   @Override
   public void onResume() {
@@ -101,20 +124,20 @@ public class LocationEditorActivity extends ActionBarActivity
     if (firstTime_) {
       setupLocation();
       firstTime_ = false;
-    } // if ...
-  } // onResume
+    }
+  }
 
   @Override
   public void onPause() {
     super.onPause();
     map_.onPause();
     ldb_.close();
-  } // onPause
+  }
 
   @Override
   public void onSetLocation(IGeoPoint point) {
     checkAllowSave();
-  } // onSetLocation
+  }
 
   @Override
   public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) { }
@@ -124,24 +147,24 @@ public class LocationEditorActivity extends ActionBarActivity
   @Override
   public void afterTextChanged(Editable editable) {
     checkAllowSave();
-  } // afterTextChanged
+  }
 
   private void checkAllowSave() {
     boolean allow =  (there_.there() != null) && (nameBox_.getText().length() > 0);
     save_.setEnabled(allow);
-  } // checkAllowSave
+  }
 
   @Override
   public void onClick(View view) {
     if (save_ == view)
       saveLocation();
     finish();
-  } // onClick
+  }
 
   private void saveLocation() {
     if (localId_ == -1)
       ldb_.addLocation(nameBox_.getText().toString(), there_.there());
     else
       ldb_.updateLocation(localId_, nameBox_.getText().toString(), there_.there());
-  } // saveLocation
-} // LocationEditorFragment
+  }
+}

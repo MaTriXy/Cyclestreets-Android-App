@@ -42,24 +42,32 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.jackson.JacksonConverterFactory;
 import retrofit2.converter.scalars.ScalarsConverterFactory;
-import retrofit2.converter.simplexml.SimpleXmlConverterFactory;
+
+import static net.cyclestreets.RoutePlans.PLAN_LEISURE;
 
 public class RetrofitApiClient {
 
   private final V1Api v1Api;
   private final V2Api v2Api;
+  private final BlogApi blogApi;
   private final Context context;
 
-  // ~30KB covers /blog/feed/, /v2/pois.types and /v2/photomap.categories - allow 200KB for headroom
+  private static final String REPORT_ERRORS = "1";
+
+  // ~30KB covers /news/feed/, /v2/pois.types and /v2/photomap.categories - allow 200KB for headroom
   private static final int CACHE_MAX_SIZE_BYTES = 200 * 1024;
   private static final String CACHE_DIR_NAME = "RetrofitApiClientCache";
 
+  // As per https://stackoverflow.com/a/49835538, SimpleXML is deprecated in favour of JAXB, but
+  // the latter doesn't work on Android.
+  @SuppressWarnings("deprecation")
   public RetrofitApiClient(Builder builder) {
 
     context = builder.context;
     Cache cache = new Cache(new File(context.getCacheDir(), CACHE_DIR_NAME), CACHE_MAX_SIZE_BYTES);
     OkHttpClient client = new OkHttpClient.Builder()
             .addInterceptor(new ApiKeyInterceptor(builder.apiKey))
+            .addInterceptor(new HttpLoggingInterceptor())
             .addNetworkInterceptor(new RewriteCacheControlInterceptor())
             .cache(cache)
             .build();
@@ -73,7 +81,7 @@ public class RetrofitApiClient {
     Retrofit retrofitV1 = new Retrofit.Builder()
         .client(client)
         .addConverterFactory(ScalarsConverterFactory.create())
-        .addConverterFactory(SimpleXmlConverterFactory.createNonStrict())
+        .addConverterFactory(retrofit2.converter.simplexml.SimpleXmlConverterFactory.createNonStrict())
         .baseUrl(builder.v1Host)
         .build();
     v1Api = retrofitV1.create(V1Api.class);
@@ -84,6 +92,14 @@ public class RetrofitApiClient {
         .baseUrl(builder.v2Host)
         .build();
     v2Api = retrofitV2.create(V2Api.class);
+
+    Retrofit retrofitBlog = new Retrofit.Builder()
+        .client(client)
+        .addConverterFactory(ScalarsConverterFactory.create())
+        .addConverterFactory(retrofit2.converter.simplexml.SimpleXmlConverterFactory.createNonStrict())
+        .baseUrl(builder.blogHost)
+        .build();
+    blogApi = retrofitBlog.create(BlogApi.class);
   }
 
   public static class Builder {
@@ -91,6 +107,7 @@ public class RetrofitApiClient {
     private String apiKey;
     private String v1Host;
     private String v2Host;
+    private String blogHost;
 
     public Builder withContext(Context context) {
       this.context = context;
@@ -111,6 +128,11 @@ public class RetrofitApiClient {
       return this;
     }
 
+    public Builder withBlogHost(String blogHost) {
+      this.blogHost = blogHost;
+      return this;
+    }
+
     public RetrofitApiClient build() {
       return new RetrofitApiClient(this);
     }
@@ -123,23 +145,31 @@ public class RetrofitApiClient {
   // --------------------------------------------------------------------------------
   // V1 APIs
   // --------------------------------------------------------------------------------
-  public String getJourneyXml(final String plan,
-                              final String itineraryPoints,
-                              final String leaving,
-                              final String arriving,
-                              final int speed) throws IOException {
-    Response<String> response = v1Api.getJourneyXml(plan, itineraryPoints, leaving, arriving, speed).execute();
-    return response.body();
+  public String getJourneyJson(final String plan,
+                               final String itineraryPoints,
+                               final String leaving,
+                               final String arriving,
+                               final int speed) throws IOException {
+    Response<String> response = v1Api.getJourneyJson(plan, itineraryPoints, leaving, arriving, speed, REPORT_ERRORS).execute();
+    return JourneyStringTransformerKt.fromV1ApiJson(response.body());
   }
 
-  public String retrievePreviousJourneyXml(final String plan,
-                                           final long itineraryId) throws IOException {
-    Response<String> response = v1Api.retrievePreviousJourneyXml(plan, itineraryId).execute();
-    return response.body();
+  public String getCircularJourneyJson(final String itineraryPoints,
+                                       final Integer distance,
+                                       final Integer duration,
+                                       final String poiTypes) throws IOException {
+    Response<String> response = v1Api.getCircularJourneyJson(PLAN_LEISURE, itineraryPoints, distance, duration, poiTypes, REPORT_ERRORS).execute();
+    return JourneyStringTransformerKt.fromV1ApiJson(response.body());
+  }
+
+  public String retrievePreviousJourneyJson(final String plan,
+                                            final long itineraryId) throws IOException {
+    Response<String> response = v1Api.retrievePreviousJourneyJson(plan, itineraryId, REPORT_ERRORS).execute();
+    return JourneyStringTransformerKt.fromV1ApiJson(response.body());
   }
 
   public Blog getBlogEntries() throws IOException {
-    Response<BlogFeedDto> response = v1Api.getBlogEntries().execute();
+    Response<BlogFeedDto> response = blogApi.getBlogEntries().execute();
     return response.body().toBlog();
   }
 
@@ -147,8 +177,8 @@ public class RetrofitApiClient {
   // V2 APIs
   // --------------------------------------------------------------------------------
 
-  public POICategories getPOICategories(int iconSize) throws IOException {
-    Response<PoiTypesDto> response = v2Api.getPOICategories(iconSize).execute();
+  public POICategories getPOICategories() throws IOException {
+    Response<PoiTypesDto> response = v2Api.getPOICategories().execute();
     return response.body().toPOICategories(context);
   }
 
@@ -191,6 +221,11 @@ public class RetrofitApiClient {
                           final double latN) throws IOException {
     String bbox = toBboxString(lonW, latS, lonE, latN);
     Response<FeatureCollection> response = v2Api.getPhotos(bbox).execute();
+    return PhotosFactory.toPhotos(response.body());
+  }
+
+  public Photos getPhoto(final long photoId) throws IOException {
+    Response<FeatureCollection> response = v2Api.getPhoto(photoId).execute();
     return PhotosFactory.toPhotos(response.body());
   }
 

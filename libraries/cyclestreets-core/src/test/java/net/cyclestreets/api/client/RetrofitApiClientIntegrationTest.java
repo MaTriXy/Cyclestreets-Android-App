@@ -2,29 +2,16 @@ package net.cyclestreets.api.client;
 
 import android.content.Context;
 
-import net.cyclestreets.api.ApiClient;
-import net.cyclestreets.api.Blog;
-import net.cyclestreets.api.Feedback;
-import net.cyclestreets.api.GeoPlace;
-import net.cyclestreets.api.GeoPlaces;
-import net.cyclestreets.api.POI;
-import net.cyclestreets.api.POICategories;
-import net.cyclestreets.api.POICategory;
-import net.cyclestreets.api.Photo;
-import net.cyclestreets.api.PhotomapCategories;
-import net.cyclestreets.api.Photos;
-import net.cyclestreets.api.Registration;
-import net.cyclestreets.api.Result;
-import net.cyclestreets.api.Signin;
-import net.cyclestreets.api.Upload;
-import net.cyclestreets.api.UserJourney;
-import net.cyclestreets.api.UserJourneys;
+import net.cyclestreets.api.*;
 import net.cyclestreets.core.R;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,13 +21,15 @@ import java.util.List;
 import java.util.Random;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+
 // Useful for manual testing that operations do work with the real API, and not just WireMock.
-// If we assigned an appropriate api key, these tests could be expanded and un-ignored.
-@Ignore
+@Ignore("Only meant for manual testing")
+@Config(manifest = Config.NONE, sdk = 30)
+@RunWith(RobolectricTestRunner.class)
 public class RetrofitApiClientIntegrationTest {
 
   RetrofitApiClient apiClient;
@@ -54,6 +43,7 @@ public class RetrofitApiClientIntegrationTest {
         .withContext(testContext)
         .withV1Host("https://www.cyclestreets.net")
         .withV2Host("https://api.cyclestreets.net")
+        .withBlogHost("https://www.cyclestreets.org")
         .build();
 
     when(testContext.getString(R.string.feedback_ok)).thenReturn("Thank you for submitting this feedback. We will get back to you when we have checked this out.");
@@ -65,23 +55,24 @@ public class RetrofitApiClientIntegrationTest {
     when(testContext.getString(R.string.signin_default_error)).thenReturn("Could not sign into CycleStreets.  Please check your username and password.");
     when(testContext.getString(R.string.upload_ok)).thenReturn("Your photo was uploaded successfully.");
     when(testContext.getString(R.string.upload_error_prefix)).thenReturn("There was a problem uploading your photo: \n");
-    // Use reflection to set context without doing full initialise
-    Field contextField = ApiClient.class.getDeclaredField("context");
-    contextField.setAccessible(true);
-    contextField.set(ApiClient.class, testContext);
+    ApiClient.INSTANCE.initialiseForTests(testContext, new ApiClientImpl(apiClient));
   }
 
   private String getApiKey() throws IOException {
     String apiKey = "apiKeyRedacted";
-    InputStream in = RetrofitApiClientIntegrationTest.class.getClassLoader().getResourceAsStream("api.key");
+    InputStream in = RetrofitApiClientIntegrationTest.class.getClassLoader().getResourceAsStream("cyclestreets-api.key");
     if (in != null) {
       try {
-        apiKey = IOUtils.toString(in, "UTF-8");
+        apiKey = IOUtils.toString(in, "UTF-8").trim();
+        System.out.println("Loaded api Key '" + apiKey + "' from api.key");
       } catch (IOException e) {
         // Give up and use default
+        System.out.println("Failed to load API key from api.key - use default");
       } finally {
         in.close();
       }
+    } else {
+      System.out.println("No api.key found to run integration test - use default");
     }
     return apiKey;
   }
@@ -96,9 +87,9 @@ public class RetrofitApiClientIntegrationTest {
 
   @Test
   public void hitGetPOICategoriesApi() throws Exception {
-    POICategories poiCategories = apiClient.getPOICategories(16);
+    POICategories poiCategories = apiClient.getPOICategories();
     for (POICategory category : poiCategories) {
-      System.out.println(category.name() + ": " + category);
+      System.out.println(category.getName() + ": " + category);
     }
   }
 
@@ -112,6 +103,14 @@ public class RetrofitApiClientIntegrationTest {
   public void hitGetPOIsByRadiusApi() throws Exception {
     List<POI> pois = apiClient.getPOIs("bikeshops", -1, 54, 100);
     System.out.println(pois);
+  }
+
+  @Test
+  public void hitGetPhotoApi() throws Exception {
+    Photos photos = apiClient.getPhoto(93348);
+    for (Photo photo : photos) {
+      System.out.println(photo);
+    }
   }
 
   @Test
@@ -189,15 +188,15 @@ public class RetrofitApiClientIntegrationTest {
   }
 
   @Test
-  public void hitGetJourneyXmlApi() throws Exception {
-    String xml = apiClient.getJourneyXml("quietest", "0.117950,52.205302,City+Centre|0.131402,52.221046,Mulberry+Close|0.147324,52.199650,Thoday+Street", null, null, 24);
-    System.out.println(xml);
+  public void hitGetJourneyJsonApi() throws Exception {
+    String json = apiClient.getJourneyJson("quietest", "0.117950,52.205302,City+Centre|0.131402,52.221046,Mulberry+Close|0.147324,52.199650,Thoday+Street", null, null, 24);
+    System.out.println(json);
   }
 
   @Test
-  public void hitRetrievePreviousJourneyXmlApi() throws Exception {
-    String xml = apiClient.retrievePreviousJourneyXml("fastest", 53135357);
-    System.out.println(xml);
+  public void hitRetrievePreviousJourneyJsonApi() throws Exception {
+    String json = apiClient.retrievePreviousJourneyJson("fastest", 53135357);
+    System.out.println(json);
   }
 
   @Test

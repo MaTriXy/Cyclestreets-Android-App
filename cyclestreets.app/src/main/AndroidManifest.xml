@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:tools="http://schemas.android.com/tools"
+    android:installLocation="preferExternal">
+
+  <uses-permission android:name="android.permission.READ_CONTACTS" />
+
+  <application
+    android:allowBackup="true"
+    android:icon="@mipmap/ic_launcher"
+    android:label="@string/app_name"
+    android:launchMode="singleTask"
+    android:allowTaskReparenting="false"
+    android:theme="@style/AppTheme"
+    android:name=".CycleStreetsApp"
+    android:appCategory="maps"
+    android:supportsRtl="false">
+    <activity
+      android:name=".CycleStreets"
+      android:label="@string/app_name"
+      android:exported="true" >
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <!-- Journey URLs -->
+        <data android:scheme="http"
+              android:host="cycle.st"
+              android:pathPrefix="/j" />
+        <data android:scheme="https"
+              android:host="cycle.st"
+              android:pathPrefix="/j" />
+        <data android:scheme="http"
+              android:host="cyclestreets.net"
+              android:pathPrefix="/journey/" />
+        <data android:scheme="https"
+              android:host="cyclestreets.net"
+              android:pathPrefix="/journey/" />
+        <data android:scheme="http"
+              android:host="*.cyclestreets.net"
+              android:pathPrefix="/journey/" />
+        <data android:scheme="https"
+              android:host="*.cyclestreets.net"
+              android:pathPrefix="/journey/" />
+        <!-- Location URLs -->
+        <data android:scheme="http"
+              android:host="cycle.st"
+              android:pathPrefix="/p" />
+        <data android:scheme="https"
+              android:host="cycle.st"
+              android:pathPrefix="/p" />
+        <data android:scheme="http"
+              android:host="cyclestreets.net"
+              android:pathPattern="/location/" />
+        <data android:scheme="https"
+              android:host="cyclestreets.net"
+              android:pathPattern="/location/" />
+        <data android:scheme="http"
+              android:host="*.cyclestreets.net"
+              android:pathPattern="/location/" />
+        <data android:scheme="https"
+              android:host="*.cyclestreets.net"
+              android:pathPattern="/location/" />
+      </intent-filter>
+    </activity>
+    <activity android:name="net.cyclestreets.AccountDetailsActivity"
+              android:label="Account Details"
+              android:exported="true">
+      <intent-filter>
+        <action android:name="net.cyclestreets.AccountDetailsActivity" />
+        <category android:name="android.intent.category.DEFAULT" />
+      </intent-filter>
+    </activity>
+    <activity android:name="net.cyclestreets.AboutActivity"
+              android:label="About"
+              android:exported="true">
+      <intent-filter>
+        <action android:name="net.cyclestreets.AboutActivity" />
+        <category android:name="android.intent.category.DEFAULT" />
+      </intent-filter>
+    </activity>
+    <activity android:name="net.cyclestreets.LocationsActivity"
+              android:label="Locations"
+              android:exported="false">
+      <intent-filter>
+        <action android:name="net.cyclestreets.LocationsActivity" />
+        <category android:name="android.intent.category.DEFAULT" />
+      </intent-filter>
+    </activity>
+    <activity
+        android:name="net.cyclestreets.views.CircularRouteActivity"
+        android:parentActivityName="net.cyclestreets.CycleStreets">
+    </activity>
+
+    <!-- Allows CycleStreets-created files to be written into by the camera app -->
+    <provider
+      android:name="androidx.core.content.FileProvider"
+      android:authorities="net.cyclestreets.fileprovider"
+      android:exported="false"
+      android:grantUriPermissions="true">
+      <meta-data
+        android:name="android.support.FILE_PROVIDER_PATHS"
+        android:resource="@xml/file_paths" />
+    </provider>
+
+    <!-- Required for app not to die on startup; see https://stackoverflow.com/a/65456866/2108057
+         and https://developer.android.com/topic/libraries/app-startup -->
+    <provider
+        android:name="androidx.startup.InitializationProvider"
+        android:authorities="${applicationId}.androidx-startup"
+        tools:node="remove" />
+
+    <meta-data android:name="CycleStreetsAPIKey" android:value="b26a0d6b45e00612" />
+  </application>
+</manifest>

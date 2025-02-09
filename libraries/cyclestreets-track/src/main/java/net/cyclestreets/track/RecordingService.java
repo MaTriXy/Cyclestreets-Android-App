@@ -14,18 +14,20 @@ import android.content.Intent;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.media.AudioManager;
+import android.media.AudioAttributes;
 import android.media.SoundPool;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 
-public class RecordingService
-    extends Service
-    implements LocationListener {
-  private static int updateDistance = 5;  // metres
-  private static int updateTime = 5000;    // milliseconds
+import net.cyclestreets.CycleStreetsNotifications;
+
+import static net.cyclestreets.CycleStreetsNotifications.CHANNEL_TRACK_ID;
+
+public class RecordingService extends Service implements LocationListener {
+  private static final int updateDistance = 5;  // metres
+  private static final int updateTime = 5000;    // milliseconds
   private static final int NOTIFICATION_ID = 1;
 
   private TrackListener trackListener_;
@@ -33,22 +35,16 @@ public class RecordingService
   private LocationManager locationManager_ = null;
 
   // Bike bell variables
-  private static int BELL_FIRST_INTERVAL = 20;
-  private static int BELL_NEXT_INTERVAL = 5;
-  private static long BAIL_TIME = 300;
+  private static final int BELL_FIRST_INTERVAL = 20;
+  private static final int BELL_NEXT_INTERVAL = 5;
+  private static final long BAIL_TIME = 300;
   private Timer tickTimer_;
   private Timer bellTimer_;
   private SoundPool soundpool_;
   private int bikebell_;
   private final Handler handler_ = new Handler();
-  private final Runnable ringBell_ = new Runnable() {
-    public void run() { remindUser(); }
-  };
-  private final Runnable tick_ = new Runnable() {
-    public void run() {
-      notifyUpdate();
-    }
-  };
+  private final Runnable ringBell_ = this::remindUser;
+  private final Runnable tick_ = this::notifyUpdate;
 
   private float curSpeedMph_;
   private TripData trip_;
@@ -62,16 +58,20 @@ public class RecordingService
   @Override
   public void onCreate() {
     super.onCreate();
-    soundpool_ = new SoundPool(1,AudioManager.STREAM_NOTIFICATION,0);
+    AudioAttributes attributes = new AudioAttributes.Builder()
+            .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+            .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+            .build();
+    soundpool_ = new SoundPool.Builder().setAudioAttributes(attributes).build();
     bikebell_ = soundpool_.load(this.getBaseContext(), R.raw.bikebell,1);
     locationManager_ = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-  } // onCreate
+  }
 
   @Override
   public void onDestroy() {
     super.onDestroy();
     stopTimers();
-  } // onDestroy
+  }
 
   @Override
   public IBinder onBind(
@@ -84,14 +84,14 @@ public class RecordingService
       final int flags,
       final int startId) {
     return Service.START_STICKY;
-  } // onStartCommand
+  }
 
   private static class ServiceBinder extends Binder implements IRecordService {
     private final RecordingService rs_;
 
     public ServiceBinder(final RecordingService rs) {
       rs_ = rs;
-    } // MyServiceBinder
+    }
 
     public int getState() {
       return rs_.state_;
@@ -101,7 +101,7 @@ public class RecordingService
     }
     public TripData stopRecording() {
       return rs_.stopRecording();
-    } // stopRecording
+    }
 
     public void setListener(
         final TrackListener ra) {
@@ -111,7 +111,7 @@ public class RecordingService
         final Class<Activity> activityClass) {
       rs_.activityClass_ = activityClass;
     }
-  } // class MyServiceBinder
+  }
 
   // ---end SERVICE methods -------------------------
 
@@ -149,7 +149,7 @@ public class RecordingService
     else
       cancelRecording();
     return trip_;
-  } // stopRecording
+  }
 
   private void finishRecording() {
     state_ = STATE_FULL;
@@ -166,7 +166,7 @@ public class RecordingService
     clearUp();
 
     state_ = STATE_IDLE;
-  } // cancelRecording
+  }
 
   private void clearUp() {
     locationManager_.removeUpdates(this);
@@ -176,7 +176,7 @@ public class RecordingService
     stopTimers();
 
     stopForeground(true);
-  } // clearUp
+  }
 
   private void startTimers() {
     bellTimer_ = new Timer();
@@ -194,7 +194,7 @@ public class RecordingService
         handler_.post(tick_);
       }
     }, 0, 1000);  // every second
-  } // startTimers
+  }
 
   private void stopTimers() {
     if (bellTimer_ != null) {
@@ -207,7 +207,7 @@ public class RecordingService
       tickTimer_.purge();
       tickTimer_ = null;
     }
-  } // stopTimers
+  }
 
   // LocationListener implementation:
   @Override
@@ -216,7 +216,7 @@ public class RecordingService
     updateTripStats(loc);
     trip_.addPointNow(loc);
     notifyUpdate();
-  } // onLocationChanged
+  }
 
   private void updateTripStats(
       final Location newLocation) {
@@ -228,7 +228,7 @@ public class RecordingService
 
     // Speed data is sometimes awful, too:
     curSpeedMph_ = newLocation.getSpeed() * spdConvert;
-  } // updateTripStats
+  }
 
   @Override
   public void onProviderDisabled(String arg0) {
@@ -245,25 +245,30 @@ public class RecordingService
 
   private NotificationManager nm() {
     return (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
-  } // nm
+  }
 
-  private Notification createNotification(
-      final String tickerText,
-      final int flags) {
-    final Notification notification = new Notification(R.drawable.icon25, tickerText, System.currentTimeMillis());
-    notification.flags = flags;
+  private Notification createNotification(final String tickerText, final int flags) {
     final Intent notificationIntent = new Intent(this, activityClass_);
     final PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
-    notification.setLatestEventInfo(this, "Cycle Hackney - Recording", "Tap to see your ongoing trip", contentIntent);
+
+    Notification notification = CycleStreetsNotifications.INSTANCE.getBuilder(this, CHANNEL_TRACK_ID)
+            .setSmallIcon(R.drawable.icon25)
+            .setTicker(tickerText)
+            .setWhen(java.lang.System.currentTimeMillis())
+            .setContentTitle("Cycle Hackney - Recording")
+            .setContentText("Tap to see your ongoing trip")
+            .setContentIntent(contentIntent)
+            .build();
+    notification.flags = flags;
     return notification;
-  } // createNotification
+  }
 
   private void showNotification(
       final String tickerText,
       final int flags) {
     final Notification notification = createNotification(tickerText, flags);
     nm().notify(NOTIFICATION_ID, notification);
-  } // showNotification
+  }
 
   private void remindUser() {
     soundpool_.play(bikebell_, 1.0f, 1.0f, 1, 0, 1.0f);
@@ -272,11 +277,11 @@ public class RecordingService
     String tickerText = String.format("Still recording (%d min)", minutes);
 
     showNotification(tickerText, Notification.FLAG_ONGOING_EVENT);
-  } // remindUser
+  }
 
   private void clearNotifications() {
     nm().cancel(NOTIFICATION_ID);
-  } // clearNotifications
+  }
 
   private boolean hasRiderStopped() {
     if (trip_.secondsElapsed() < BAIL_TIME)
@@ -288,18 +293,18 @@ public class RecordingService
 
     final List<CyclePoint> points = trip_.journey();
     final CyclePoint end = points.get(points.size()-1);
-    for(int i = points.size()-1; i != 0; --i) {
+    for (int i = points.size()-1; i != 0; --i) {
       final CyclePoint cur = points.get(i);
 
-      if (end.distanceTo(cur) > 100)
+      if (end.distanceToAsDouble(cur) > 100)
         return false;
 
       if ((end.time - cur.time) > BAIL_TIME)
         break;
-    } // for ...
+    }
 
     return true;
-  } // checkForAutoStop
+  }
 
   private void notifyUpdate() {
     if (trackListener_ == null)
@@ -309,5 +314,5 @@ public class RecordingService
 
     if (hasRiderStopped())
       trackListener_.riderHasStopped(trip_);
-  } // notifyStatusUpdate
-} // RecordingService
+  }
+}

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/route_view"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/route_summary_info"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:background="@drawable/textviewrectangle"
+        android:padding="4dp"
+        android:text=""
+        android:textAppearance="@android:style/TextAppearance.Material.Body1"
+        android:textColor="@android:color/white"
+        android:textSize="16sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Tap to Route button -->
+    <Button
+        android:id="@+id/tap_to_route_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/route_summary_info"
+        android:visibility="visible"
+        android:padding="0dp"
+        android:textAppearance="@android:style/TextAppearance.Material.Body1"
+        android:textSize="16sp"
+        android:textColor="@android:color/white"/>
+
+    <com.mikepenz.iconics.view.IconicsImageView
+        android:id="@+id/route_now_icon"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        app:layout_constraintEnd_toEndOf="@+id/tap_to_route_button"
+        app:layout_constraintTop_toTopOf="@id/tap_to_route_button"
+        android:padding="6dp"
+        app:iiv_color="?android:textColorSecondaryInverse"
+        app:iiv_icon="gmd-play-arrow"
+        android:visibility="invisible"/>
+
+    <!-- Route highlight left/right -->
+    <LinearLayout
+        android:id="@+id/linearLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_margin="16dp">
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/route_highlight_prev"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:fabSize="normal"
+            app:borderWidth="12dp"
+            app:backgroundTint="@android:color/background_light"/>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/route_highlight_next"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:fabSize="normal"
+            app:borderWidth="12dp"
+            app:ico_color="?android:textColorSecondary"
+            app:backgroundTint="@android:color/background_light" />
+    </LinearLayout>
+
+    <!-- Restart route planning -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/restartbutton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@id/linearLayout"
+        android:layout_margin="16dp"
+        android:visibility="invisible"
+        app:fabSize="normal"
+        app:borderWidth="12dp"
+        app:backgroundTint="@android:color/background_light"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

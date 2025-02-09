@@ -1,13 +1,13 @@
 package net.cyclestreets;
 
-import net.cyclestreets.api.Result;
-import net.cyclestreets.util.Dialog;
-import net.cyclestreets.view.R;
 import net.cyclestreets.api.Feedback;
+import net.cyclestreets.api.Result;
 import net.cyclestreets.routing.Route;
+import net.cyclestreets.util.Dialog;
 import net.cyclestreets.util.MessageBox;
+import net.cyclestreets.util.ProgressDialog;
+import net.cyclestreets.view.R;
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -20,31 +20,31 @@ import android.widget.TextView;
 
 public class FeedbackActivity extends Activity implements TextWatcher, OnClickListener {
   private Button upload_;
-  
+
   @Override
   protected void onCreate(final Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.routefeedback);
 
     upload_ = (Button)findViewById(R.id.upload);
-    
+
     upload_.setEnabled(false);
     upload_.setOnClickListener(this);
-    
+
     setText(R.id.name, CycleStreetsPreferences.name());
     setText(R.id.email, CycleStreetsPreferences.email());
-    
+
     textView(R.id.comments).addTextChangedListener(this);
   }
-  
+
   private TextView textView(final int id) {
     return (TextView)findViewById(id);
   }
-  
+
   private void setText(final int id, final String value) {
     textView(id).setText(value);
   }
-  
+
   private String text(final int id) {
     return textView(id).getText().toString();
   }

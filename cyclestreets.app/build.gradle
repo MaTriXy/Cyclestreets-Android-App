@@ -1,0 +1,98 @@
+buildscript {
+  dependencies {
+    classpath 'me.moallemi.gradle:advanced-build-version:2.0.2'
+  }
+}
+
+plugins {
+  id 'com.github.triplet.play' version '3.6.0'
+}
+
+// Use a plugin to derive a version name (e.g. 3.7) and monotonically increasing version code (e.g. 1372)
+apply plugin: 'me.moallemi.advanced-build-version'
+advancedVersioning {
+  nameOptions {
+    versionMajor 3
+    versionMinor 13
+    versionPatch 2
+  }
+  codeOptions {
+    versionCodeType 'GIT_COMMIT_COUNT'
+  }
+}
+
+evaluationDependsOn(':libraries:cyclestreets-fragments')
+
+// derive signing config from license.properties (decrypted from license.properties.enc by ciLicense.sh)
+def keystorePropertiesFile = file('license.properties')
+if (!keystorePropertiesFile.exists()) {
+  logger.warn('NOTE: license.properties file not found: falling back to license.properties.dummy; the compiled artifact will have a dummy signature')
+  keystorePropertiesFile = file('license.properties.dummy')
+}
+def keystoreProperties = new Properties()
+keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+
+android {
+  defaultConfig {
+    applicationId 'net.cyclestreets'
+    versionName advancedVersioning.versionName
+    versionCode advancedVersioning.versionCode
+
+    testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+  }
+  packagingOptions {
+    resources {
+      excludes += [
+        'META-INF/LICENSE',
+        'META-INF/LICENSE.txt',
+        'META-INF/DEPENDENCIES',
+        'META-INF/NOTICE',
+        'META-INF/NOTICE.txt'
+      ]
+    }
+  }
+
+
+  signingConfigs {
+    release {
+      keyAlias keystoreProperties['key.alias']
+      keyPassword keystoreProperties['key.password']
+      storeFile file(keystoreProperties['key.store'])
+      storePassword keystoreProperties['key.password']
+    }
+  }
+
+  buildTypes {
+// If you have the decrypted keys locally, and need to use them to sign the debug variant so you can install it onto
+// a real device for testing in advance of a beta build coming out, uncomment the following lines.
+//    debug {
+//      signingConfig signingConfigs.release
+//    }
+    release {
+      signingConfig signingConfigs.release
+    }
+  }
+  namespace 'net.cyclestreets'
+}
+
+import com.github.triplet.gradle.androidpublisher.ReleaseStatus
+play {
+  // credentials file decrypted from play-api-key.json.enc by ciLicense.sh
+  serviceAccountCredentials.set(file('play-api-key.json'))
+
+  track.set('beta')
+  releaseStatus.set(ReleaseStatus.DRAFT)
+
+  // If you want to update screenshots etc, check what 'publish' tasks are available by running
+  // `./gradlew tasks`, and refer to the documentation at https://github.com/Triple-T/gradle-play-publisher
+}
+
+dependencies {
+  api project(':libraries:cyclestreets-fragments')
+  implementation 'androidx.startup:startup-runtime:1.1.1'
+
+  androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
+  androidTestImplementation 'androidx.test.ext:junit:1.2.1'
+  androidTestImplementation 'androidx.test:rules:1.6.1'
+  androidTestImplementation "org.assertj:assertj-core:${rootProject.ext.assertjVersion}"
+}

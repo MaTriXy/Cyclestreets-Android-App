@@ -4,8 +4,9 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.preference.PreferenceManager;
+import android.net.NetworkCapabilities;
+import android.os.Build;
+import androidx.preference.PreferenceManager;
 import android.telephony.TelephonyManager;
 
 public class CycleStreetsPreferences
@@ -22,6 +23,7 @@ public class CycleStreetsPreferences
   public final static String PREF_CONFIRM_NEW_ROUTE = "confirm-new-route";
   public final static String PREF_USERNAME_KEY = "username";
   public final static String PREF_PASSWORD_KEY = "password";
+  public final static String PREF_CONFIRM_PASSWORD_KEY = "confirm_password";
   public final static String PREF_EMAIL_KEY = "email";
   public final static String PREF_NAME_KEY = "name";
   public final static String PREF_VALIDATED_KEY = "signed-in";
@@ -33,180 +35,245 @@ public class CycleStreetsPreferences
   public final static String PREF_NEARING_TURN = "nearing-turn-distance";
   public final static String PREF_OFFTRACK_DISTANCE = "offtrack-distance";
   public final static String PREF_REPLAN_DISTANCE = "replan-distance";
-  public final static String PREF_PEBBLE_VOICE = "pebble-voice";
+
+  public final static String PREF_SHOW_REMAINING_TIME = "show-remaining-time";
+  public final static String PREF_SHOW_ETA = "show-ETA";
+
+  public static final String PREF_PERMISSION_REQUESTED_PREFIX = "permission-requested-";
+  public static final String PREF_SETTINGS_LAST_TIME_PREFIX = "settings-last-time-";
 
   public final static String MAPSTYLE_OCM = "CycleStreets";
   public final static String MAPSTYLE_OSM = "CycleStreets-OSM";
   public final static String MAPSTYLE_OS = "CycleStreets-OS";
   public final static String MAPSTYLE_MAPSFORGE = "CycleStreets-Mapsforge";
 
-  static public void initialise(final Context context, final int defaults) {
+  public static void initialise(final Context context, final int defaults) {
     context_ = context;
 
     if (defaults != -1)
       PreferenceManager.setDefaultValues(context_, defaults, false);
 
     // upgrades
-    if(uploadSize().equals("320px"))
+    if (uploadSize().equals("320px"))
       putString(PREF_UPLOAD_SIZE, "640px");
-  } // initialise
+  }
 
-  static public String routeType() {
+  public static String routeType() {
     return getString(PREF_ROUTE_TYPE_KEY, RoutePlans.PLAN_BALANCED);
   }
 
-  static public String units() {
+  public static String units() {
     return getString(PREF_UNITS_KEY, "km");
-  } // units
+  }
 
-  static public int speed() {
+  public static int speed() {
     return Integer.parseInt(getString(PREF_SPEED_KEY, "20"));
   }
 
-  static public String mapstyle() {
+  public static String mapstyle() {
     return getString(PREF_MAPSTYLE_KEY, NOT_SET);
   }
 
-  static public void setMapstyle(final String name) {
+  public static void setMapstyle(final String name) {
     putString(PREF_MAPSTYLE_KEY, name);
   }
 
-  static public void resetMapstyle() {
+  public static void resetMapstyle() {
     setMapstyle(NOT_SET);
   }
 
-  static public String mapfile() {
+  public static String mapfile() {
     return getString(PREF_MAPFILE_KEY, NOT_SET);
   }
 
-  static public String username() {
+  public static String username() {
     return getString(PREF_USERNAME_KEY, "");
   }
 
-  static public String password() {
+  public static String password() {
     return getString(PREF_PASSWORD_KEY, "");
-  } // password
+  }
 
-  static public String name() {
+  public static String name() {
     return getString(PREF_NAME_KEY, "");
-  } // name
+  }
 
-  static public String email() {
+  public static String email() {
     return getString(PREF_EMAIL_KEY, "");
-  } // email
+  }
 
-  static public boolean accountOK() {
+  public static boolean accountOK() {
     return getBoolean(PREF_VALIDATED_KEY, false);
-  } // accountOK
+  }
 
-  static public boolean accountPending() {
+  public static boolean accountPending() {
     return getBoolean(PREF_PENDING_KEY, false);
-  } // accountPending
+  }
 
-  static public boolean confirmNewRoute() {
+  public static boolean confirmNewRoute() {
     return getBoolean(PREF_CONFIRM_NEW_ROUTE, true);
-  } // confirmNewRoute
+  }
 
-  static public String uploadSize() {
+  public static String uploadSize() {
     return getString(PREF_UPLOAD_SIZE, "bigIfWifi");
-  } // uploadSize
+  }
 
-  static public boolean blogNotifications() {
+  public static boolean blogNotifications() {
     return getBoolean(PREF_BLOG_NOTIFICATIONS, true);
-  } // blogNotifications
+  }
 
-  static public void setBlogNotifications(final boolean active) {
+  public static void setBlogNotifications(final boolean active) {
     putBoolean(PREF_BLOG_NOTIFICATIONS, active);
-  } // setBlogNotifications
+  }
 
-  static public int turnNowDistance() {
+  public static int turnNowDistance() {
     return Integer.parseInt(getString(PREF_TURN_NOW, "15"));
   }
 
-  static public int nearingTurnDistance() {
+  public static int nearingTurnDistance() {
     return Integer.parseInt(getString(PREF_NEARING_TURN, "50"));
   }
 
-  static public int offtrackDistance() {
+  public static int offtrackDistance() {
     return Integer.parseInt(getString(PREF_OFFTRACK_DISTANCE, "30"));
   }
 
-  static public int replanDistance() {
+  public static int replanDistance() {
     return Integer.parseInt(getString(PREF_REPLAN_DISTANCE, "50"));
   }
 
-  static public boolean pebbleVoice() {
-    return getBoolean(PREF_PEBBLE_VOICE, true);
+  public static boolean showRemainingTime() {
+    return getBoolean(PREF_SHOW_REMAINING_TIME, true);
   }
 
-  static public boolean uploadSmallImages() {
-    final String resize = uploadSize();
-    if("640px".equals(resize))
+  public static boolean showEta() {
+    return getBoolean(PREF_SHOW_ETA, true);
+  }
+
+  public static boolean permissionPreviouslyRequested(String permission) {
+    return getBoolean(PREF_PERMISSION_REQUESTED_PREFIX + permission, false);
+  }
+
+  public static void logPermissionAsRequested(String permission) {
+    putBoolean(PREF_PERMISSION_REQUESTED_PREFIX + permission, true);
+  }
+
+  public static void clearPermissionRequested(String permission) {
+    final Editor editor = editor();
+    editor.remove(PREF_PERMISSION_REQUESTED_PREFIX + permission);
+    editor.apply();
+  }
+
+  public static boolean settingsLastTime(String permission) {
+    return getBoolean(PREF_SETTINGS_LAST_TIME_PREFIX + permission, false);
+  }
+
+  public static void logSettingsLastTime(String permission) {
+    putBoolean(PREF_SETTINGS_LAST_TIME_PREFIX + permission, true);
+  }
+
+  public static void clearSettingsLastTime(String permission) {
+    final Editor editor = editor();
+    editor.remove(PREF_SETTINGS_LAST_TIME_PREFIX + permission);
+    editor.apply();
+  }
+
+  public static boolean uploadSmallImages() {
+    if ("640px".equals(uploadSize()))
       return true;
-    if("big".equals(resize))
+    if ("big".equals(uploadSize()))
       return false;
 
+    return !onFastConnection();
+  }
+
+  private static boolean onFastConnection() {
     final ConnectivityManager connMgr = (ConnectivityManager)context_.getSystemService(Context.CONNECTIVITY_SERVICE);
-    final NetworkInfo ni = connMgr.getActiveNetworkInfo();
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+      return onFastConnection28OrHigher(connMgr);
+    } else {
+      return onFastConnectionPre28(connMgr);
+    }
+  }
 
-    final int type = ni.getType();
-    if((type == ConnectivityManager.TYPE_WIFI) || (type == ConnectivityManager.TYPE_WIMAX))
-      return false;
+  private static boolean onFastConnection28OrHigher(ConnectivityManager connMgr) {
+    NetworkCapabilities capabilities = connMgr.getNetworkCapabilities(connMgr.getActiveNetwork());
+    return capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
+           capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) ||
+           onQuickMobileConnection(connMgr);
+  }
 
+  @SuppressWarnings("deprecation")
+  private static boolean onFastConnectionPre28(ConnectivityManager connMgr) {
+    final int type = connMgr.getActiveNetworkInfo().getType();
+    return type == ConnectivityManager.TYPE_WIFI ||
+           type == ConnectivityManager.TYPE_WIMAX ||
+           onQuickMobileConnection(connMgr);
+  }
+
+  private static boolean onQuickMobileConnection(ConnectivityManager connMgr) {
     // so it's mobile, but is it still quick?
-    final int subtype = ni.getSubtype();
-    return !((subtype == TelephonyManager.NETWORK_TYPE_HSDPA) ||
-             (subtype == TelephonyManager.NETWORK_TYPE_HSPA) ||
-             (subtype == TelephonyManager.NETWORK_TYPE_HSUPA));
-  } // uploadSmallImages
+    final int subtype = connMgr.getActiveNetworkInfo().getSubtype();
+    return ((subtype == TelephonyManager.NETWORK_TYPE_HSDPA) ||
+            (subtype == TelephonyManager.NETWORK_TYPE_HSPA) ||
+            (subtype == TelephonyManager.NETWORK_TYPE_HSUPA));
+  }
 
-  static private String getString(final String key, final String defVal) {
+  public static void clearOsmdroidCacheLocation() {
+    final Editor editor = editor();
+    editor.remove("osmdroid.basePath");
+    editor.remove("osmdroid.cachePath");
+    editor.commit();
+  }
+
+  private static String getString(final String key, final String defVal) {
+    if (context_ == null) {
+      // Protect against a potential race condition on resume
+      return defVal;
+    }
     final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context_);
     return prefs.getString(key, defVal);
-  } // getStirng
+  }
 
-  static private void putString(final String key, final String value) {
+  private static void putString(final String key, final String value) {
     final Editor editor = editor();
     editor.putString(key, value);
     editor.commit();
-  } // putString
+  }
 
-  static private boolean getBoolean(final String key, final boolean defVal) {
+  private static boolean getBoolean(final String key, final boolean defVal) {
     final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context_);
     return prefs.getBoolean(key, defVal);
-  } // getBoolean
+  }
 
-  static private void putBoolean(final String key, final boolean value) {
+  private static void putBoolean(final String key, final boolean value) {
     final Editor editor = editor();
     editor.putBoolean(key, value);
     editor.commit();
-  } // putBoolean
+  }
 
-  static public void setUsernamePassword(final String username,
+  public static void setUsernamePassword(final String username,
                                          final String password,
                                          final String name,
                                          final String email,
-                                         final boolean signedin)
-  {
+                                         final boolean signedin) {
     final Editor editor = editor();
     editor.putString(PREF_USERNAME_KEY, username);
     editor.putString(PREF_PASSWORD_KEY, password);
     editor.putBoolean(PREF_VALIDATED_KEY, signedin);
-    if(signedin)
-    {
+    if (signedin) {
       editor.putString(PREF_NAME_KEY, name);
       editor.putString(PREF_EMAIL_KEY, email);
       editor.putBoolean(PREF_PENDING_KEY, false);
     }
     editor.commit();
-  } // setUsernamePassword
+  }
 
-  static public void setPendingUsernamePassword(final String username,
+  public static void setPendingUsernamePassword(final String username,
                                                 final String password,
                                                 final String name,
                                                 final String email,
-                                                final boolean pending)
-  {
+                                                final boolean pending) {
     final Editor editor = editor();
     editor.putString(PREF_USERNAME_KEY, username);
     editor.putString(PREF_PASSWORD_KEY, password);
@@ -215,30 +282,53 @@ public class CycleStreetsPreferences
     editor.putBoolean(PREF_PENDING_KEY, pending);
     editor.putBoolean(PREF_VALIDATED_KEY, false);
     editor.commit();
-  } // setPendingUsernamePassword
+  }
 
-  static public void clearUsernamePassword()
-  {
+  public static void setTempUsernamePassword(final String username,
+                                                final String password,
+                                                final String confirmPassword,
+                                                final String name,
+                                                final String email) {
+    final Editor editor = editor();
+    editor.putString(PREF_USERNAME_KEY, username);
+    editor.putString(PREF_PASSWORD_KEY, password);
+    editor.putString(PREF_CONFIRM_PASSWORD_KEY, confirmPassword);
+    editor.putString(PREF_NAME_KEY, name);
+    editor.putString(PREF_EMAIL_KEY, email);
+    editor.commit();
+  }
+
+  public static void clearUsernamePassword() {
     final Editor editor = editor();
     editor.putString(PREF_USERNAME_KEY, "");
     editor.putString(PREF_PASSWORD_KEY, "");
     editor.putString(PREF_NAME_KEY, "");
     editor.putString(PREF_EMAIL_KEY, "");
+    editor.putString(PREF_CONFIRM_PASSWORD_KEY, "");
     editor.putBoolean(PREF_PENDING_KEY, false);
     editor.putBoolean(PREF_VALIDATED_KEY, false);
     editor.commit();
-  } // clearUsernamePassword
+  }
 
-  static public void enableMapFile(final String filename)
-  {
+  public static void clearTempUsernamePassword() {
+    final Editor editor = editor();
+    editor.putString(PREF_USERNAME_KEY, "");
+    editor.putString(PREF_PASSWORD_KEY, "");
+    editor.putString(PREF_NAME_KEY, "");
+    editor.putString(PREF_EMAIL_KEY, "");
+    editor.putString(PREF_CONFIRM_PASSWORD_KEY, "");
+    editor.commit();
+  }
+
+  public static void enableMapFile(final String filename) {
     final Editor editor = editor();
     editor.putString(PREF_MAPSTYLE_KEY, MAPSTYLE_MAPSFORGE);
     editor.putString(PREF_MAPFILE_KEY, filename);
     editor.commit();
-  } // setMapFile
+  }
 
-  static private Editor editor() {
+  private static Editor editor() {
     final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context_);
     return prefs.edit();
-  } // editor
-} // class CycleStreetsPreferences
+  }
+}

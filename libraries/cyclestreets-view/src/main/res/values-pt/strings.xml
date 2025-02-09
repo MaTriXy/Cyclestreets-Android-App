@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="app_name">CycleStreets</string>
+
+  <string name="route_map">Planejador de viagem</string>
+  <string name="itinerary">Itinerário</string>
+  <string name="elevation">Elevação</string>
+  <string name="photomap">Photomap</string>
+  <string name="photo_upload">Adicionar foto</string>
+  <string name="settings">Configuração</string>
+  <string name="about">Sobre</string>
+  <string name="blog">Blog</string>
+  <string name="blog_updated">Blog - Atualizado</string>
 
   <string name="all_button_back">Anterior</string>
   <string name="all_button_next">Próximo</string>
@@ -21,10 +30,15 @@
   <string name="route_finding_new">Obtendo rotas de CycleStreets.net, favor esperar</string>
   <string name="route_fetching_existing">Buscando rotas de CycleStreets.net, favor esperar</string>
   <string name="route_finding_failed">A busca da rota falhou</string>
+  <string name="alt_route_finding_failed">Alternative route could not be retrieved.  Try pressing the back button to remove last waypoint.</string>
   <string name="route_loading">Carregando rota, favor esperar</string>
+  <string name="route_max_waypoints">Maximum number of waypoints reached.</string>
 
   <string name="route_menu_change">Mudar tipo de rota</string>
+  <string name="route_menu_alternative">Alternative route</string>
+  <string name="alt_route_details">alt:</string>
   <string name="route_menu_change_reverse">Inverter rota</string>
+  <string name="route_menu_change_waypoints">Add / Remove waypoints</string>
   <string name="route_menu_change_share">Compartilhar esta rota</string>
   <string name="route_menu_change_comment">Comentar esta rota</string>
   <string name="route_menu_change_replan_fastest">Replanejar priorizando velocidade</string>
@@ -54,6 +68,8 @@
   <string name="report_title">Seu relatório</string>
   <string name="report_location_hint">Qual a localização descrita no seu relatório?</string>
 
+  <string name="tap_here">Mais detalhes...</string>
+
   <string name="tiles_map_pack_out_of_date">Este mapa não pode ser utilizado com esta versão do aplicativo. \n\nGostaria de procurar por uma atualização?</string>
 
   <string name="placeview_menu">Menu</string>
@@ -70,7 +86,7 @@
   <string name="poi_menu_entry">categorias</string>
 
   <string name="settings_no_map_packs">Você não tem nenhum mapa instalado. Mapas vetoriais para uso offline estão disponíveis como download separado.
-	    \n\nGostaria de procurar por um pacote de mapas agora?</string>
+      \n\nGostaria de procurar por um pacote de mapas agora?</string>
   <string name="settings_signed_in">Logado em CycleStreets</string>
   <string name="settings_awaiting">Registro da conta aguardando confirmação</string>
 
@@ -102,5 +118,32 @@
   <string name="account_pending">Você já tem uma conta registrada. Favor verificar sua caixa de emails para um email de confimação. </string>
   <string name="account_registration_is_free_long">O cadastro é gratúito, e usuários registrados podem adicionar fotos. Para iniciar um cadastro digite seus dados no formulário abaixo.</string>
   <string name="placeview_contacts">Contatos</string>
+
+  <string name="perm_needed">A permissão precisa ser concedida nas configurações do dispositivo.</string>
+
+  <string name="show_remaining_time">Mostrar tempo restante</string>
+  <string name="show_ETA">Mostrar hora prevista de chegada</string>
+  <string name="remaining">Restante</string>
+  <string name="slash_ETA">/ Chegada</string>
+
+  <string name="duration">Duration</string>
+  <string name="distance">Distance</string>
+  <string name="circular_route">Circular Route</string>
+  <string name="create_circular_route_desc">Create a circular route based on a duration or distance</string>
+  <string name="create_circular_route_button">Create circular route</string>
+  <string name="mins">mins</string>
+  <string name="choose_pois_to_route_via">Optionally, choose Points of Interest to route via:</string>
+  <string name="pois">POIs</string>
+  <string name="num_poitypes_selected">%1$s selected</string>
+
+  <!-- Waymark labels -->
+  <string name="waypoint_renumber_title">Remove or renumber waypoint</string>
+  <string name="waypoint_start_initial">S</string>
+  <string name="waypoint_finish_initial">F</string>
+  <string name="waypoint_start">Start</string>
+  <string name="waypoint">waypoint</string>
+  <string name="waypoint_finish">Finish</string>
+  <string name="remove_waypoint">Remove waypoint</string>
+  <string name="change_to">"Change to "</string>
 
 </resources>

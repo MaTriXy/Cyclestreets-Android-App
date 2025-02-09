@@ -1,6 +1,6 @@
 package net.cyclestreets.api;
 
-import org.osmdroid.util.BoundingBoxE6;
+import org.osmdroid.util.BoundingBox;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -12,19 +12,18 @@ public class Photos implements Iterable<Photo> {
 
   public Photos(List<Photo> photos) {
     this.photos.addAll(photos);
-  } // Photos
+  }
 
   @Override
   public Iterator<Photo> iterator() {
     return photos.iterator();
-  } // iterator
+  }
 
   /////////////////////////////////////////////////////////////
-  public static Photos load(final BoundingBoxE6 boundingBox)
-          throws IOException {
-    return ApiClient.getPhotos(boundingBox.getLonEastE6() / 1E6,
-                               boundingBox.getLonWestE6() / 1E6,
-                               boundingBox.getLatNorthE6() / 1E6,
-                               boundingBox.getLatSouthE6() / 1E6);
-  } // load
+  public static Photos load(final BoundingBox boundingBox) {
+    return ApiClient.INSTANCE.getPhotos(boundingBox.getLonWest(),
+                                        boundingBox.getLatSouth(),
+                                        boundingBox.getLonEast(),
+                                        boundingBox.getLatNorth());
+  }
 }

@@ -4,7 +4,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.location.Location;
 
-import org.osmdroid.util.BoundingBoxE6;
+import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
 
 import java.util.ArrayList;
@@ -105,8 +105,8 @@ public class TripData {
     int COL_ALT = points.getColumnIndex(DbAdapter.K_POINT_ALT);
 
     while (!points.isAfterLast()) {
-      int lat = points.getInt(COL_LAT);
-      int lgt = points.getInt(COL_LGT);
+      double lat = points.getInt(COL_LAT) / 1e6;
+      double lgt = points.getInt(COL_LGT) / 1e6;
       long time = points.getInt(COL_TIME);
       double altitude = points.getDouble(COL_ALT);
       float speed = (float)points.getDouble(COL_SPEED);
@@ -115,10 +115,10 @@ public class TripData {
       gpspoints.add(new CyclePoint(lat, lgt, time, acc, altitude, speed));
 
       points.moveToNext();
-    } // while
+    }
     points.close();
     mDb.close();
-  } // loadJourney
+  }
 
   private void createTripInDatabase(Context c) {
     mDb.open();
@@ -137,37 +137,37 @@ public class TripData {
   public boolean dataAvailable() { return gpspoints.size() != 0; }
   public GeoPoint startLocation() { return gpspoints.get(0); }
   public GeoPoint endLocation() { return gpspoints.get(gpspoints.size()-1); }
-  public BoundingBoxE6 boundingBox() {
-    int lathigh = Integer.MIN_VALUE;
-    int lgthigh = Integer.MIN_VALUE;
-    int latlow = Integer.MAX_VALUE;
-    int lgtlow = Integer.MAX_VALUE;
+  public BoundingBox boundingBox() {
+    double lathigh = Double.MIN_VALUE;
+    double lgthigh = Double.MIN_VALUE;
+    double latlow = Double.MAX_VALUE;
+    double lgtlow = Double.MAX_VALUE;
 
-    for(GeoPoint gp : gpspoints) {
-      lathigh = Math.max(gp.getLatitudeE6(), lathigh);
-      latlow = Math.min(gp.getLatitudeE6(), latlow);
-      lgthigh = Math.max(gp.getLongitudeE6(), lgthigh);
-      lgtlow = Math.min(gp.getLongitudeE6(), lgtlow);
+    for (GeoPoint gp : gpspoints) {
+      lathigh = Math.max(gp.getLatitude(), lathigh);
+      latlow = Math.min(gp.getLatitude(), latlow);
+      lgthigh = Math.max(gp.getLongitude(), lgthigh);
+      lgtlow = Math.min(gp.getLongitude(), lgtlow);
     }
 
-    return new BoundingBoxE6(lathigh, lgtlow, latlow, lgthigh);
+    return new BoundingBox(lathigh, lgtlow, latlow, lgthigh);
   }
-	public List<CyclePoint> journey() { return gpspoints;	}
+  public List<CyclePoint> journey() { return gpspoints;  }
   public long startTime() { return startTime_; }
   public long endTime() { return endTime_; }
   public long secondsElapsed() {
-    if(status == STATUS_RECORDING)
+    if (status == STATUS_RECORDING)
       return now() - startTime_;
     return endTime_ - startTime_;
-  } // secondsElapsed
+  }
   public long lastPointElapsed() {
     if (!dataAvailable())
       return secondsElapsed();
     return now() - endTime_;
-  } // lastPointElapsed
+  }
   public float distanceTravelled() {
     return (0.0006212f * distance);
-  } // distanceTravelled
+  }
   public String notes() { return note_; }
   public String purpose() { return purp_; }
   public String info() { return info_; }
@@ -179,8 +179,8 @@ public class TripData {
   private long now() { return System.currentTimeMillis()/1000; }
 
   public void addPointNow(Location loc) {
-    int lat = (int)(loc.getLatitude() * 1E6);
-    int lgt = (int)(loc.getLongitude() * 1E6);
+    double lat = loc.getLatitude();
+    double lgt = loc.getLongitude();
 
     float accuracy = loc.getAccuracy();
     double altitude = loc.getAltitude();
@@ -192,23 +192,20 @@ public class TripData {
     if (gpspoints.size() > 1) {
       CyclePoint gp = gpspoints.get(gpspoints.size()-1);
 
-      float segmentDistance = gp.distanceTo(pt);
+      double segmentDistance = gp.distanceToAsDouble(pt);
       if (segmentDistance == 0)
         return; // we haven't gone anywhere
 
-      distance += segmentDistance;
-    } // if ...
+      distance += (float)segmentDistance;
+    }
 
     gpspoints.add(pt);
-
 
     mDb.open();
     mDb.addCoordToTrip(tripid, pt);
     mDb.setDistance(tripid, distance);
     mDb.close();
-
-    return;
-  } // addPointNow
+  }
 
   public void recordingStopped() {
     endTime_ = now();
@@ -244,6 +241,6 @@ public class TripData {
     age_ = age;
     gender_ = gender;
     experience_ = experience;
-  } // updateTrip
+  }
 
-} // TripData
+}
